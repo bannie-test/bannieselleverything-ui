@@ -18,6 +18,9 @@ const links = [
   { name: 'admin-orders', label: 'Orders' },
   { name: 'admin-products', label: 'Products' },
   { name: 'admin-categories', label: 'Categories' },
+  { name: 'admin-reviews', label: 'Reviews' },
+  { name: 'admin-support', label: 'Support' },
+  { name: 'admin-settings', label: 'Settings' },
 ]
 
 function isActive(link: (typeof links)[number]) {
