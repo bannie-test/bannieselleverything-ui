@@ -1,0 +1,63 @@
+@import 'tailwindcss';
+
+/*
+ * Tenant branding: the tenant store sets --tenant-primary on <html> at boot from
+ * GET /storefront/tenant-info. Tailwind's `primary` color token reads it, so
+ * bg-primary, text-primary, ring-primary etc. follow each shop's brand.
+ */
+:root {
+  --tenant-primary: #2563eb;
+}
+
+@theme inline {
+  --color-primary: var(--tenant-primary);
+}
+
+body {
+  @apply bg-stone-50 text-stone-900 antialiased;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition
+      disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2
+      focus-visible:outline-primary;
+  }
+  .btn-primary {
+    @apply bg-primary text-white hover:brightness-110;
+  }
+  .btn-secondary {
+    @apply border border-stone-300 bg-white text-stone-800 hover:bg-stone-100;
+  }
+  .btn-danger {
+    @apply border border-red-200 bg-white text-red-700 hover:bg-red-50;
+  }
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+  .input {
+    @apply block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm shadow-xs placeholder:text-stone-400
+      focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:bg-stone-100;
+  }
+  .input-error {
+    @apply border-red-400 focus:border-red-500 focus:ring-red-500/20;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-stone-700;
+  }
+  .field-error {
+    @apply mt-1 text-xs text-red-600;
+  }
+  .card {
+    @apply rounded-xl border border-stone-200 bg-white;
+  }
+  .alert-error {
+    @apply rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800;
+  }
+  .alert-success {
+    @apply rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800;
+  }
+  .link {
+    @apply font-medium text-primary hover:underline;
+  }
+}
