@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { http } from '@/api/client'
 import type { Paged, ProductSummary } from '@/api/types'
 import PaginationBar from '@/components/PaginationBar.vue'
 import ProductCard from '@/components/ProductCard.vue'
 import { useTenantStore } from '@/stores/tenant'
+import { minorDigits } from '@/utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +21,36 @@ const q = computed(() => (typeof route.query.q === 'string' ? route.query.q : ''
 const category = computed(() => (typeof route.query.category === 'string' ? route.query.category : ''))
 const sort = computed(() => (typeof route.query.sort === 'string' ? route.query.sort : 'newest'))
 const page = computed(() => Number(route.query.page) || 1)
+const minPrice = computed(() => (typeof route.query.minPrice === 'string' ? Number(route.query.minPrice) || undefined : undefined))
+const maxPrice = computed(() => (typeof route.query.maxPrice === 'string' ? Number(route.query.maxPrice) || undefined : undefined))
+const inStock = computed(() => route.query.inStock === '1')
+const onSale = computed(() => route.query.onSale === '1')
+const minRating = computed(() => (typeof route.query.minRating === 'string' ? Number(route.query.minRating) || undefined : undefined))
+const activeFilters = computed(() => [minPrice.value, maxPrice.value, minRating.value].some((v) => v !== undefined) || inStock.value || onSale.value)
+
+// Prices in the URL and API are minor units; the inputs show whole currency units.
+const currency = computed(() => tenant.info?.currency ?? 'VND')
+const scale = computed(() => 10 ** minorDigits(currency.value))
+const priceInputs = reactive({ min: '', max: '' })
+// Small screens: filters fold away so products stay above the fold.
+const filtersOpen = ref(false)
+watch(
+  [minPrice, maxPrice, scale],
+  () => {
+    priceInputs.min = minPrice.value ? String(minPrice.value / scale.value) : ''
+    priceInputs.max = maxPrice.value ? String(maxPrice.value / scale.value) : ''
+  },
+  { immediate: true },
+)
+
+function applyPrice() {
+  const toMinor = (v: string) => (v.trim() && Number(v) > 0 ? String(Math.round(Number(v) * scale.value)) : undefined)
+  update({ minPrice: toMinor(priceInputs.min), maxPrice: toMinor(priceInputs.max), page: undefined })
+}
+
+function clearFilters() {
+  update({ minPrice: undefined, maxPrice: undefined, inStock: undefined, onSale: undefined, minRating: undefined, page: undefined })
+}
 
 const currentCategory = computed(() => tenant.categories.find((c) => c.slug === category.value))
 const heading = computed(() => {
@@ -42,7 +73,18 @@ watch(
     failed.value = false
     try {
       const { data } = await http.get<Paged<ProductSummary>>('/storefront/products', {
-        params: { q: q.value || undefined, category: category.value || undefined, sort: sort.value, page: page.value, pageSize: 12 },
+        params: {
+          q: q.value || undefined,
+          category: category.value || undefined,
+          sort: sort.value,
+          minPrice: minPrice.value,
+          maxPrice: maxPrice.value,
+          inStock: inStock.value || undefined,
+          onSale: onSale.value || undefined,
+          minRating: minRating.value,
+          page: page.value,
+          pageSize: 12,
+        },
       })
       if (id === requestId) result.value = data
     } catch {
@@ -86,6 +128,58 @@ watch(
           </RouterLink>
         </template>
       </nav>
+
+      <button
+        class="btn btn-secondary mt-3 w-full lg:hidden"
+        :aria-expanded="filtersOpen"
+        aria-controls="catalog-filters"
+        @click="filtersOpen = !filtersOpen"
+      >
+        {{ filtersOpen ? 'Hide filters' : 'Filters' }}<span v-if="activeFilters" class="h-2 w-2 rounded-full bg-primary" aria-label="active" />
+      </button>
+
+      <div id="catalog-filters" :class="filtersOpen ? 'block' : 'hidden lg:block'" class="mt-4 space-y-5 border-t border-stone-200 pt-4 text-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="font-semibold text-stone-500 uppercase">Filters</h2>
+          <button v-if="activeFilters" class="text-xs text-primary hover:underline" @click="clearFilters">Clear</button>
+        </div>
+
+        <form class="space-y-2" @submit.prevent="applyPrice">
+          <p class="font-medium">Price ({{ currency }})</p>
+          <div class="flex items-center gap-2">
+            <input v-model="priceInputs.min" type="number" min="0" inputmode="numeric" placeholder="Min" class="input" aria-label="Minimum price" />
+            <span class="text-stone-400">–</span>
+            <input v-model="priceInputs.max" type="number" min="0" inputmode="numeric" placeholder="Max" class="input" aria-label="Maximum price" />
+          </div>
+          <button type="submit" class="btn btn-secondary w-full py-1.5">Apply</button>
+        </form>
+
+        <fieldset class="space-y-2">
+          <legend class="mb-2 font-medium">Availability</legend>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="h-4 w-4 accent-primary" :checked="inStock" @change="update({ inStock: inStock ? undefined : '1', page: undefined })" />
+            In stock only
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="h-4 w-4 accent-primary" :checked="onSale" @change="update({ onSale: onSale ? undefined : '1', page: undefined })" />
+            On sale
+          </label>
+        </fieldset>
+
+        <fieldset class="space-y-2">
+          <legend class="mb-2 font-medium">Customer rating</legend>
+          <label v-for="r in [undefined, 4, 3, 2]" :key="r ?? 'any'" class="flex items-center gap-2">
+            <input
+              type="radio"
+              name="minRating"
+              class="h-4 w-4 accent-primary"
+              :checked="minRating === r"
+              @change="update({ minRating: r, page: undefined })"
+            />
+            {{ r ? `${r}★ & up` : 'Any rating' }}
+          </label>
+        </fieldset>
+      </div>
     </aside>
 
     <section class="min-w-0 flex-1">
@@ -100,6 +194,7 @@ watch(
             <option value="newest">Newest</option>
             <option value="price_asc">Price: low to high</option>
             <option value="price_desc">Price: high to low</option>
+            <option value="rating">Top rated</option>
             <option value="name">Name</option>
           </select>
         </label>
@@ -113,7 +208,7 @@ watch(
 
       <div v-else-if="result && result.items.length === 0" class="card p-10 text-center">
         <p class="font-medium">No products found</p>
-        <p class="mt-1 text-sm text-stone-600">Try a different search or browse all products.</p>
+        <p class="mt-1 text-sm text-stone-600">Try a different search, loosen the filters or browse all products.</p>
         <RouterLink :to="{ name: 'catalog' }" class="btn btn-secondary mt-4">Clear filters</RouterLink>
       </div>
 

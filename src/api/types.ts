@@ -18,6 +18,14 @@ export interface TenantInfo {
   contactEmail: string | null
   contactPhone: string | null
   address: string | null
+  /** Present only when the shop accepts bank transfers. */
+  bankTransfer: BankTransferInfo | null
+}
+
+export interface BankTransferInfo {
+  bankName: string
+  accountNumber: string
+  accountName: string
 }
 
 export interface CategoryRef {
@@ -42,6 +50,8 @@ export interface ProductSummary {
   imageUrl: string | null
   inStock: boolean
   category: CategoryRef | null
+  ratingAverage: number | null
+  reviewCount: number
 }
 
 export interface ProductDetail {
@@ -57,6 +67,8 @@ export interface ProductDetail {
   images: string[]
   attributes: Record<string, string>
   category: CategoryRef | null
+  ratingAverage: number | null
+  reviewCount: number
 }
 
 export interface CartItem {
@@ -98,6 +110,14 @@ export type OrderStatus =
   | 'Cancelled'
   | 'Refunded'
 
+export type PaymentMethod = 'CashOnDelivery' | 'BankTransfer'
+
+export interface OrderEvent {
+  status: OrderStatus
+  note: string | null
+  occurredAt: string
+}
+
 export interface OrderItem {
   productId: string
   productName: string
@@ -121,6 +141,11 @@ export interface Order {
   placedAt: string
   items: OrderItem[]
   canCancel: boolean
+  paymentMethod: PaymentMethod
+  paidAt: string | null
+  shippingCarrier: string | null
+  trackingNumber: string | null
+  timeline: OrderEvent[]
 }
 
 export interface OrderSummary {
@@ -219,4 +244,113 @@ export interface Dashboard {
   orders30Days: number
   currency: string
   daily: { date: string; revenueMinor: number; orders: number }[]
+  awaitingPaymentOrders: number
+  openSupportTickets: number
+}
+
+export interface SavedAddress extends Address {
+  id: string
+  isDefault: boolean
+}
+
+export interface Review {
+  id: string
+  rating: number
+  title: string | null
+  body: string | null
+  authorName: string
+  isVerifiedPurchase: boolean
+  createdAt: string
+  isMine: boolean
+}
+
+export interface ReviewPage {
+  summary: {
+    ratingAverage: number | null
+    reviewCount: number
+    /** Number of 1- to 5-star reviews at indexes 0 to 4. */
+    distribution: number[]
+  }
+  reviews: Paged<Review>
+}
+
+export interface AdminReview {
+  id: string
+  productId: string
+  productName: string
+  productSlug: string
+  rating: number
+  title: string | null
+  body: string | null
+  authorName: string
+  isVerifiedPurchase: boolean
+  createdAt: string
+}
+
+export type NotificationType = 'OrderUpdate' | 'SupportReply'
+
+export interface AppNotification {
+  id: string
+  type: NotificationType
+  title: string
+  body: string
+  link: string | null
+  createdAt: string
+  isRead: boolean
+}
+
+export type TicketStatus = 'Open' | 'Answered' | 'Closed'
+
+export interface TicketSummary {
+  number: string
+  subject: string
+  orderNumber: string | null
+  status: TicketStatus
+  createdAt: string
+  lastMessageAt: string
+  lastAuthor: 'Customer' | 'Staff'
+}
+
+export interface SupportMessage {
+  id: string
+  authorType: 'Customer' | 'Staff'
+  authorName: string
+  body: string
+  createdAt: string
+}
+
+export interface Ticket {
+  number: string
+  subject: string
+  orderNumber: string | null
+  status: TicketStatus
+  createdAt: string
+  messages: SupportMessage[]
+}
+
+export interface AdminTicket {
+  ticket: Ticket
+  customerName: string
+  customerEmail: string
+  customerPhone: string | null
+}
+
+export interface AdminTicketSummary {
+  ticket: TicketSummary
+  customerName: string
+  customerEmail: string
+}
+
+export interface ShopSettings {
+  name: string
+  logoUrl: string | null
+  primaryColor: string
+  contactEmail: string | null
+  contactPhone: string | null
+  address: string | null
+  flatShippingMinor: number
+  bankTransferEnabled: boolean
+  bankName: string | null
+  bankAccountNumber: string | null
+  bankAccountName: string | null
 }

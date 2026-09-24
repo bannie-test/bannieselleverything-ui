@@ -5,11 +5,13 @@ import { errorMessage, http, LAST_ORDER_EMAIL_KEY } from '@/api/client'
 import type { Order } from '@/api/types'
 import OrderDetails from '@/components/OrderDetails.vue'
 import { useCustomerStore } from '@/stores/customer'
+import { useTenantStore } from '@/stores/tenant'
 import { storage } from '@/utils/storage'
 
 const route = useRoute()
 const router = useRouter()
 const customer = useCustomerStore()
+const tenant = useTenantStore()
 
 const order = ref<Order | null>(null)
 const error = ref<string | null>(null)
@@ -65,7 +67,8 @@ async function cancel() {
     <div v-if="justPlaced && order" class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
       <h1 class="text-xl font-semibold">Thank you! Your order has been placed.</h1>
       <p class="mt-1 text-sm">
-        We'll confirm it shortly. Keep your order number <span class="font-mono font-semibold">{{ order.orderNumber }}</span> to track it.
+        {{ order.status === 'AwaitingPayment' ? 'Complete the bank transfer below and we will ship it once payment arrives.' : "We'll confirm it shortly." }}
+        Keep your order number <span class="font-mono font-semibold">{{ order.orderNumber }}</span> to track it.
       </p>
     </div>
     <div v-else class="mb-4 flex items-center justify-between">
@@ -77,14 +80,21 @@ async function cancel() {
     <div v-if="!order && !error" class="h-64 animate-pulse rounded-xl bg-stone-200" />
 
     <template v-if="order">
-      <OrderDetails :order="order" />
+      <OrderDetails :order="order" :bank-transfer="tenant.info?.bankTransfer" />
       <div class="mt-6 flex flex-wrap gap-3">
         <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary">Continue shopping</RouterLink>
+        <RouterLink
+          v-if="customer.isSignedIn && !order.isGuest"
+          :to="{ name: 'support', query: { order: order.orderNumber } }"
+          class="btn btn-secondary"
+        >
+          Get help with this order
+        </RouterLink>
         <button v-if="order.canCancel && customer.isSignedIn" class="btn btn-danger" :disabled="cancelling" @click="cancel">
           {{ cancelling ? 'Cancelling…' : 'Cancel order' }}
         </button>
       </div>
-      <p v-if="order.isGuest && order.status === 'Pending'" class="mt-3 text-sm text-stone-600">
+      <p v-if="order.isGuest && (order.status === 'Pending' || order.status === 'AwaitingPayment')" class="mt-3 text-sm text-stone-600">
         Need to change or cancel this order? Contact the shop with your order number.
       </p>
     </template>

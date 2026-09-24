@@ -1,4 +1,4 @@
-import type { OrderStatus } from '@/api/types'
+import type { OrderStatus, PaymentMethod, TicketStatus } from '@/api/types'
 
 const moneyFormatters = new Map<string, Intl.NumberFormat>()
 
@@ -11,6 +11,11 @@ export function money(amountMinor: number, currency = 'VND'): string {
   }
   const digits = formatter.resolvedOptions().maximumFractionDigits ?? 0
   return formatter.format(amountMinor / 10 ** digits)
+}
+
+/** Decimal places of the currency's minor unit: 0 for VND, 2 for USD. */
+export function minorDigits(currency = 'VND'): number {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 0
 }
 
 const dateTime = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
@@ -32,6 +37,7 @@ export const statusLabels: Record<OrderStatus, string> = {
 
 /** Verb for the button that moves an order into this status. */
 export const statusActions: Partial<Record<OrderStatus, string>> = {
+  Paid: 'Confirm payment received',
   Processing: 'Confirm & start processing',
   Shipped: 'Mark as shipped',
   Delivered: 'Mark as delivered',
@@ -41,4 +47,34 @@ export const statusActions: Partial<Record<OrderStatus, string>> = {
 export function discountPercent(price: number, compareAt: number | null): number | null {
   if (!compareAt || compareAt <= price) return null
   return Math.round((1 - price / compareAt) * 100)
+}
+
+export const paymentMethodLabels: Record<PaymentMethod, string> = {
+  CashOnDelivery: 'Cash on delivery',
+  BankTransfer: 'Bank transfer',
+}
+
+export const ticketStatusLabels: Record<TicketStatus, string> = {
+  Open: 'Waiting for the shop',
+  Answered: 'Shop replied',
+  Closed: 'Closed',
+}
+
+const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+
+/** "5 minutes ago", "yesterday"; falls back to a date after a week. */
+export function timeAgo(iso: string): string {
+  const seconds = (new Date(iso).getTime() - Date.now()) / 1000
+  const abs = Math.abs(seconds)
+  if (abs < 60) return 'just now'
+  if (abs < 3600) return relative.format(Math.round(seconds / 60), 'minute')
+  if (abs < 86400) return relative.format(Math.round(seconds / 3600), 'hour')
+  if (abs < 604800) return relative.format(Math.round(seconds / 86400), 'day')
+  return dateOnly.format(new Date(iso))
+}
+
+const dateOnly = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' })
+
+export function formatDate(iso: string): string {
+  return dateOnly.format(new Date(iso))
 }
