@@ -27,12 +27,17 @@ export const router = createRouter({
         { path: 'orders/:number', name: 'order', component: () => import('@/views/storefront/OrderView.vue') },
         { path: 'account/login', name: 'login', component: () => import('@/views/storefront/LoginView.vue') },
         { path: 'account/register', name: 'register', component: () => import('@/views/storefront/RegisterView.vue') },
-        {
-          path: 'account/orders',
-          name: 'my-orders',
-          component: () => import('@/views/storefront/MyOrdersView.vue'),
-          meta: { requiresCustomer: true },
-        },
+        ...(
+          [
+            ['orders', 'my-orders', () => import('@/views/storefront/MyOrdersView.vue')],
+            ['wishlist', 'wishlist', () => import('@/views/storefront/WishlistView.vue')],
+            ['notifications', 'notifications', () => import('@/views/storefront/NotificationsView.vue')],
+            ['support', 'support', () => import('@/views/storefront/SupportView.vue')],
+            ['support/:number', 'support-ticket', () => import('@/views/storefront/SupportTicketView.vue')],
+            ['profile', 'profile', () => import('@/views/storefront/ProfileView.vue')],
+            ['addresses', 'addresses', () => import('@/views/storefront/AddressesView.vue')],
+          ] as const
+        ).map(([path, name, component]) => ({ path: `account/${path}`, name, component, meta: { requiresCustomer: true } })),
       ],
     },
     { path: '/admin/login', name: 'admin-login', component: () => import('@/views/admin/AdminLoginView.vue') },
@@ -63,6 +68,9 @@ export const router = createRouter({
           component: () => import('@/views/admin/PromotionsView.vue'),
         },
         { path: 'reports', name: 'admin-reports', component: () => import('@/views/admin/ReportsView.vue') },
+        { path: 'reviews', name: 'admin-reviews', component: () => import('@/views/admin/ReviewsView.vue') },
+        { path: 'support', name: 'admin-support', component: () => import('@/views/admin/SupportView.vue') },
+        { path: 'support/:number', name: 'admin-support-ticket', component: () => import('@/views/admin/SupportTicketView.vue') },
         { path: 'settings', name: 'admin-settings', component: () => import('@/views/admin/SettingsView.vue') },
       ],
     },

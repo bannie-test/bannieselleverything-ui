@@ -13,7 +13,7 @@ const result = ref<Paged<OrderSummary> | null>(null)
 const failed = ref(false)
 const search = ref(typeof route.query.q === 'string' ? route.query.q : '')
 
-const statuses: OrderStatus[] = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+const statuses: OrderStatus[] = ['Pending', 'AwaitingPayment', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
 
 function update(patch: Record<string, string | number | undefined>) {
   const query: Record<string, string> = {}

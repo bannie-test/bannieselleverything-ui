@@ -13,7 +13,18 @@ interface SidebarEntry {
 }
 
 /** Must match TenantAppearance.SidebarKeys on the API. */
-export const sidebarKeys: SidebarKey[] = ['dashboard', 'orders', 'products', 'categories', 'customers', 'promotions', 'reports', 'settings']
+export const sidebarKeys: SidebarKey[] = [
+  'dashboard',
+  'orders',
+  'products',
+  'categories',
+  'reviews',
+  'customers',
+  'support',
+  'promotions',
+  'reports',
+  'settings',
+]
 
 export const sidebarDefaults: Record<SidebarKey, SidebarEntry> = {
   dashboard: {
@@ -45,12 +56,26 @@ export const sidebarDefaults: Record<SidebarKey, SidebarEntry> = {
     match: 'admin-categories',
     icon: 'M4 6h7v5H4V6Zm9 0h7v5h-7V6Zm-9 7h7v5H4v-5Zm9 0h7v5h-7v-5Z',
   },
+  reviews: {
+    label: 'Reviews',
+    to: { name: 'admin-reviews' },
+    route: 'admin-reviews',
+    match: 'admin-reviews',
+    icon: 'm12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9L12 3.5Z',
+  },
   customers: {
     label: 'Customers',
     to: { name: 'admin-customers' },
     route: 'admin-customers',
     match: 'admin-customers',
     icon: 'M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1m17 0v-1a4 4 0 0 0-3-3.87M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm6-6.87a3.5 3.5 0 0 1 0 6.74',
+  },
+  support: {
+    label: 'Support',
+    to: { name: 'admin-support' },
+    route: 'admin-support',
+    match: 'admin-support',
+    icon: 'M4 5h16v11H9l-5 4V5Zm4 5h8m-8-3h5',
   },
   promotions: {
     label: 'Promotions',

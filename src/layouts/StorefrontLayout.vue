@@ -3,11 +3,13 @@ import { onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useCustomerStore } from '@/stores/customer'
+import { useNotificationsStore } from '@/stores/notifications'
 import { useTenantStore } from '@/stores/tenant'
 
 const tenant = useTenantStore()
 const cart = useCartStore()
 const customer = useCustomerStore()
+const notifications = useNotificationsStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -72,7 +74,27 @@ function signOut() {
         <nav class="ml-auto flex items-center gap-1 text-sm sm:gap-3">
           <template v-if="customer.isSignedIn">
             <RouterLink :to="{ name: 'my-orders' }" class="hidden rounded-lg px-2 py-1.5 hover:bg-stone-100 sm:inline">My account</RouterLink>
-            <button class="hidden rounded-lg px-2 py-1.5 text-stone-600 hover:bg-stone-100 sm:inline" @click="signOut">Sign out</button>
+            <button class="hidden rounded-lg px-2 py-1.5 text-stone-600 hover:bg-stone-100 lg:inline" @click="signOut">Sign out</button>
+            <RouterLink :to="{ name: 'wishlist' }" class="hidden rounded-lg p-2 hover:bg-stone-100 sm:block" aria-label="Wishlist">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linejoin="round" d="M12 20.5s-7.5-4.6-9.2-9.4C1.7 7.8 3.9 4.5 7.3 4.5c2 0 3.5 1.1 4.7 2.7 1.2-1.6 2.7-2.7 4.7-2.7 3.4 0 5.6 3.3 4.5 6.6-1.7 4.8-9.2 9.4-9.2 9.4Z" />
+              </svg>
+            </RouterLink>
+            <RouterLink
+              :to="{ name: 'notifications' }"
+              class="relative rounded-lg p-2 hover:bg-stone-100"
+              :aria-label="notifications.unread ? `Notifications, ${notifications.unread} unread` : 'Notifications'"
+            >
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Zm4 4a2 2 0 0 0 4 0" />
+              </svg>
+              <span
+                v-if="notifications.unread"
+                class="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-semibold text-white"
+              >
+                {{ notifications.unread > 9 ? '9+' : notifications.unread }}
+              </span>
+            </RouterLink>
           </template>
           <RouterLink v-else :to="{ name: 'login' }" class="hidden rounded-lg px-2 py-1.5 hover:bg-stone-100 sm:inline">Sign in</RouterLink>
 
@@ -140,6 +162,10 @@ function signOut() {
           <hr class="my-2 border-stone-200" />
           <template v-if="customer.isSignedIn">
             <RouterLink :to="{ name: 'my-orders' }" class="py-2">My account</RouterLink>
+            <RouterLink :to="{ name: 'my-orders' }" class="py-2">My orders</RouterLink>
+            <RouterLink :to="{ name: 'wishlist' }" class="py-2">Wishlist</RouterLink>
+            <RouterLink :to="{ name: 'support' }" class="py-2">Customer support</RouterLink>
+            <RouterLink :to="{ name: 'profile' }" class="py-2">Profile & addresses</RouterLink>
             <button class="py-2 text-left" @click="signOut">Sign out</button>
           </template>
           <template v-else>
@@ -169,7 +195,8 @@ function signOut() {
         <div>
           <p class="font-semibold text-stone-900">Help</p>
           <RouterLink :to="{ name: 'track-order' }" class="mt-1 block hover:text-primary">Track an order</RouterLink>
-          <p>Cash on delivery nationwide</p>
+          <RouterLink :to="{ name: 'support' }" class="block hover:text-primary">Customer support</RouterLink>
+          <p>Cash on delivery{{ tenant.info?.bankTransfer ? ' or bank transfer' : '' }} nationwide</p>
         </div>
       </div>
     </footer>

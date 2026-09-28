@@ -4,8 +4,11 @@ import { RouterLink, useRoute } from 'vue-router'
 import { errorMessage, http } from '@/api/client'
 import type { ProductDetail } from '@/api/types'
 import PriceTag from '@/components/PriceTag.vue'
+import ProductReviews from '@/components/ProductReviews.vue'
 import QuantityStepper from '@/components/QuantityStepper.vue'
 import SuggestedProducts from '@/components/SuggestedProducts.vue'
+import StarRating from '@/components/StarRating.vue'
+import WishlistButton from '@/components/WishlistButton.vue'
 import { useCartStore } from '@/stores/cart'
 
 const route = useRoute()
@@ -154,6 +157,10 @@ async function addToCart() {
       <div>
         <p v-if="product.category" class="text-sm text-stone-500">{{ product.category.name }}</p>
         <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">{{ product.name }}</h1>
+        <a href="#reviews" class="mt-2 inline-flex items-center gap-2 text-sm text-stone-600 hover:text-primary">
+          <StarRating :rating="product.ratingAverage" size="md" />
+          <span>{{ product.reviewCount ? `${product.ratingAverage?.toFixed(1)} · ${product.reviewCount} review${product.reviewCount === 1 ? '' : 's'}` : 'No reviews yet' }}</span>
+        </a>
         <PriceTag
           class="mt-3"
           large
@@ -169,11 +176,14 @@ async function addToCart() {
           {{ availability.text }}
         </p>
 
-        <div v-if="product.stockQuantity > 0" class="mt-6 flex flex-wrap items-center gap-3">
-          <QuantityStepper v-model="quantity" :max="Math.max(1, maxAddable)" :disabled="maxAddable === 0" />
-          <button class="btn btn-primary btn-lg flex-1 sm:flex-none" :disabled="adding || maxAddable === 0" @click="addToCart">
-            {{ adding ? 'Adding…' : 'Add to cart' }}
-          </button>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <template v-if="product.stockQuantity > 0">
+            <QuantityStepper v-model="quantity" :max="Math.max(1, maxAddable)" :disabled="maxAddable === 0" />
+            <button class="btn btn-primary btn-lg flex-1 sm:flex-none" :disabled="adding || maxAddable === 0" @click="addToCart">
+              {{ adding ? 'Adding…' : 'Add to cart' }}
+            </button>
+          </template>
+          <WishlistButton :product-id="product.id" variant="button" />
         </div>
         <p v-if="inCart && maxAddable === 0 && product.stockQuantity > 0" class="mt-2 text-sm text-stone-600">
           You already have all available stock in your cart.
@@ -225,6 +235,10 @@ async function addToCart() {
       </div>
     </div>
 
+    <ProductReviews
+      :slug="product.slug"
+      @changed="(s) => product && Object.assign(product, { ratingAverage: s.ratingAverage, reviewCount: s.reviewCount })"
+    />
     <SuggestedProducts :product-ids="[product.id]" />
   </div>
 </template>

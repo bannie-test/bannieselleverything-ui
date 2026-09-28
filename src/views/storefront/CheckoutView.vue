@@ -2,22 +2,28 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { errorMessage, fieldErrors, http, LAST_ORDER_EMAIL_KEY } from '@/api/client'
-import type { Address, Order } from '@/api/types'
+import type { Address, Order, PaymentMethod, SavedAddress } from '@/api/types'
 import CartTotals from '@/components/CartTotals.vue'
 import VoucherBox from '@/components/VoucherBox.vue'
 import { useCartStore } from '@/stores/cart'
 import { useCustomerStore } from '@/stores/customer'
+import { useTenantStore } from '@/stores/tenant'
 import { money } from '@/utils/format'
 import { storage } from '@/utils/storage'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const customer = useCustomerStore()
+const tenant = useTenantStore()
 
 const email = ref('')
 const notes = ref('')
 const saveAddress = ref(true)
 const address = reactive<Address>({ recipientName: '', phone: '', province: '', district: '', ward: '', streetAddress: '' })
+const paymentMethod = ref<PaymentMethod>('CashOnDelivery')
+const savedAddresses = ref<SavedAddress[]>([])
+/** A saved address id, or 'new' to type one in. */
+const addressChoice = ref<string>('new')
 const errors = ref<Record<string, string>>({})
 const submitError = ref<string | null>(null)
 const submitting = ref(false)
@@ -51,10 +57,21 @@ function prefill() {
   }
 }
 
+async function loadSavedAddresses() {
+  if (!customer.isSignedIn) return
+  try {
+    savedAddresses.value = (await http.get<SavedAddress[]>('/storefront/account/addresses')).data
+    addressChoice.value = savedAddresses.value.find((a) => a.isDefault)?.id ?? savedAddresses.value[0]?.id ?? 'new'
+  } catch {
+    /* fall back to typing the address */
+  }
+}
+
 onMounted(async () => {
   if (!cartStore.loaded) await cartStore.load().catch(() => {})
   await customer.restore()
   prefill()
+  await loadSavedAddresses()
 })
 watch(() => customer.customer, prefill)
 
@@ -67,9 +84,11 @@ async function placeOrder() {
       '/storefront/checkout',
       {
         email: customer.isSignedIn ? null : email.value,
-        shippingAddress: address,
+        shippingAddress: addressChoice.value === 'new' ? address : null,
+        addressId: addressChoice.value === 'new' ? null : addressChoice.value,
         notes: notes.value || null,
-        saveAddress: customer.isSignedIn && saveAddress.value,
+        saveAddress: customer.isSignedIn && addressChoice.value === 'new' && saveAddress.value,
+        paymentMethod: paymentMethod.value,
       },
       { headers: { 'Idempotency-Key': idempotencyKey } },
     )
@@ -124,7 +143,29 @@ async function placeOrder() {
 
       <section class="card p-5">
         <h2 class="font-semibold">Shipping address</h2>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <div v-if="savedAddresses.length" class="mt-4 space-y-2" role="radiogroup" aria-label="Saved addresses">
+          <label
+            v-for="a in savedAddresses"
+            :key="a.id"
+            :class="addressChoice === a.id ? 'border-primary bg-primary/5' : 'border-stone-200 hover:border-stone-300'"
+            class="flex cursor-pointer gap-3 rounded-lg border-2 p-3 text-sm"
+          >
+            <input v-model="addressChoice" type="radio" name="address" :value="a.id" class="mt-1 h-4 w-4 accent-primary" />
+            <span>
+              <span class="font-medium">{{ a.recipientName }}</span> · {{ a.phone }}
+              <span v-if="a.isDefault" class="ml-1 rounded bg-stone-100 px-1.5 py-0.5 text-xs text-stone-600">Default</span>
+              <span class="block text-stone-600">{{ a.streetAddress }}, {{ a.ward }}, {{ a.district }}, {{ a.province }}</span>
+            </span>
+          </label>
+          <label
+            :class="addressChoice === 'new' ? 'border-primary bg-primary/5' : 'border-stone-200 hover:border-stone-300'"
+            class="flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 text-sm font-medium"
+          >
+            <input v-model="addressChoice" type="radio" name="address" value="new" class="h-4 w-4 accent-primary" />
+            Ship to a different address
+          </label>
+        </div>
+        <div v-if="addressChoice === 'new'" class="mt-4 grid gap-4 sm:grid-cols-2">
           <div v-for="f in fields" :key="f.key" :class="{ 'sm:col-span-2': f.wide }">
             <label :for="f.key" class="label">{{ f.label }}</label>
             <input
@@ -139,7 +180,7 @@ async function placeOrder() {
             <p v-if="errors[`shippingAddress.${f.key}`]" class="field-error">{{ errors[`shippingAddress.${f.key}`] }}</p>
           </div>
         </div>
-        <label v-if="customer.isSignedIn" class="mt-4 flex items-center gap-2 text-sm">
+        <label v-if="customer.isSignedIn && addressChoice === 'new'" class="mt-4 flex items-center gap-2 text-sm">
           <input v-model="saveAddress" type="checkbox" class="h-4 w-4 accent-primary" />
           Save this address to my account
         </label>
@@ -147,12 +188,30 @@ async function placeOrder() {
 
       <section class="card p-5">
         <h2 class="font-semibold">Payment</h2>
-        <div class="mt-3 flex items-center gap-3 rounded-lg border-2 border-primary bg-primary/5 p-3 text-sm">
-          <span class="h-4 w-4 rounded-full border-4 border-primary" aria-hidden="true" />
-          <div>
-            <p class="font-medium">Cash on delivery</p>
-            <p class="text-stone-600">Pay the courier when your order arrives.</p>
-          </div>
+        <div class="mt-3 space-y-2" role="radiogroup" aria-label="Payment method">
+          <label
+            :class="paymentMethod === 'CashOnDelivery' ? 'border-primary bg-primary/5' : 'border-stone-200 hover:border-stone-300'"
+            class="flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 text-sm"
+          >
+            <input v-model="paymentMethod" type="radio" name="payment" value="CashOnDelivery" class="h-4 w-4 accent-primary" />
+            <span>
+              <span class="block font-medium">Cash on delivery</span>
+              <span class="text-stone-600">Pay the courier when your order arrives.</span>
+            </span>
+          </label>
+          <label
+            v-if="tenant.info?.bankTransfer"
+            :class="paymentMethod === 'BankTransfer' ? 'border-primary bg-primary/5' : 'border-stone-200 hover:border-stone-300'"
+            class="flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 text-sm"
+          >
+            <input v-model="paymentMethod" type="radio" name="payment" value="BankTransfer" class="h-4 w-4 accent-primary" />
+            <span>
+              <span class="block font-medium">Bank transfer</span>
+              <span class="text-stone-600">
+                Transfer to {{ tenant.info.bankTransfer.bankName }} after placing the order. We ship once the payment arrives.
+              </span>
+            </span>
+          </label>
         </div>
         <label for="notes" class="label mt-4">Order note (optional)</label>
         <textarea id="notes" v-model="notes" rows="2" maxlength="2000" class="input" placeholder="Delivery instructions, gift message…" />

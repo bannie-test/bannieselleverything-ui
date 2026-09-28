@@ -88,6 +88,16 @@ onBeforeUnmount(() => chart?.destroy())
         <p class="mt-1 text-2xl font-semibold" :class="{ 'text-red-700': data.lowStockProducts }">{{ data.lowStockProducts }}</p>
         <p class="text-xs text-stone-500">of {{ data.activeProducts }} active products →</p>
       </RouterLink>
+      <RouterLink :to="{ name: 'admin-orders', query: { status: 'AwaitingPayment' } }" class="card p-4 transition hover:border-amber-300">
+        <p class="text-sm text-stone-500">Awaiting bank transfer</p>
+        <p class="mt-1 text-2xl font-semibold" :class="{ 'text-amber-700': data.awaitingPaymentOrders }">{{ data.awaitingPaymentOrders }}</p>
+        <p class="text-xs text-stone-500">payments to confirm →</p>
+      </RouterLink>
+      <RouterLink :to="{ name: 'admin-support', query: { status: 'Open' } }" class="card p-4 transition hover:border-amber-300">
+        <p class="text-sm text-stone-500">Support requests</p>
+        <p class="mt-1 text-2xl font-semibold" :class="{ 'text-amber-700': data.openSupportTickets }">{{ data.openSupportTickets }}</p>
+        <p class="text-xs text-stone-500">waiting for a reply →</p>
+      </RouterLink>
     </div>
 
     <div class="card mt-6 p-4 sm:p-5">

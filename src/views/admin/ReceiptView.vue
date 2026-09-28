@@ -4,7 +4,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import { errorMessage, http } from '@/api/client'
 import type { AdminOrder, ShopSettings } from '@/api/types'
 import { useTenantStore } from '@/stores/tenant'
-import { formatDateTime, money, statusLabels } from '@/utils/format'
+import { formatDateTime, money, paymentMethodLabels, statusLabels } from '@/utils/format'
 
 type Format = 'a4' | 'thermal'
 
@@ -91,7 +91,7 @@ const address = computed(() => {
           <p class="mt-1">{{ order.customerEmail }}</p>
           <p class="text-stone-600">{{ order.isGuest ? 'Guest checkout' : 'Registered customer' }}<template v-if="order.membershipTierName"> · {{ order.membershipTierName }} member</template></p>
           <p class="mt-2 text-xs font-semibold tracking-wide text-stone-500 uppercase">Payment</p>
-          <p>Cash on delivery</p>
+          <p>{{ paymentMethodLabels[order.paymentMethod] }}<template v-if="order.paidAt"> · paid {{ formatDateTime(order.paidAt) }}</template></p>
         </div>
       </section>
 
@@ -158,7 +158,7 @@ const address = computed(() => {
       <p v-if="order.voucherDiscountMinor" class="flex justify-between"><span>{{ order.voucherCode }}</span><span>−{{ m(order.voucherDiscountMinor) }}</span></p>
       <p class="flex justify-between"><span>Shipping</span><span>{{ order.shippingMinor ? m(order.shippingMinor) : 'Free' }}</span></p>
       <p class="mt-1 flex justify-between text-sm font-bold"><span>TOTAL</span><span>{{ m(order.totalMinor) }}</span></p>
-      <p class="mt-1">Payment: cash on delivery</p>
+      <p class="mt-1">Payment: {{ paymentMethodLabels[order.paymentMethod] }}{{ order.paidAt ? ' (paid)' : '' }}</p>
       <p class="my-2 border-t border-dashed border-black" />
       <p class="text-center">Thank you!</p>
     </article>

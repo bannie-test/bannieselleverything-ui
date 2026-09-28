@@ -158,6 +158,34 @@ function reset() {
             <p class="hint">{{ form.flatShippingMinor ? `${money(form.flatShippingMinor)} per order` : 'Free shipping on every order' }}</p>
           </div>
         </section>
+        <section class="card space-y-4 p-5">
+          <h2 class="font-semibold">Payment</h2>
+          <p class="text-sm">Cash on delivery is always available.</p>
+          <label class="flex items-center gap-2 text-sm font-medium">
+            <input v-model="form.bankTransferEnabled" type="checkbox" class="h-4 w-4 accent-primary" />
+            Accept bank transfers
+          </label>
+          <div v-if="form.bankTransferEnabled" class="grid gap-4 rounded-lg bg-stone-50 p-4 sm:grid-cols-2">
+            <div>
+              <label for="bankName" class="label">Bank</label>
+              <input id="bankName" v-model="form.bankName" placeholder="Vietcombank" :class="{ 'input-error': errors.bankName }" class="input" />
+              <p v-if="errors.bankName" class="field-error">{{ errors.bankName }}</p>
+            </div>
+            <div>
+              <label for="bankAccountNumber" class="label">Account number</label>
+              <input id="bankAccountNumber" v-model="form.bankAccountNumber" :class="{ 'input-error': errors.bankAccountNumber }" class="input font-mono" />
+              <p v-if="errors.bankAccountNumber" class="field-error">{{ errors.bankAccountNumber }}</p>
+            </div>
+            <div class="sm:col-span-2">
+              <label for="bankAccountName" class="label">Account holder name</label>
+              <input id="bankAccountName" v-model="form.bankAccountName" :class="{ 'input-error': errors.bankAccountName }" class="input" />
+              <p v-if="errors.bankAccountName" class="field-error">{{ errors.bankAccountName }}</p>
+            </div>
+            <p class="text-xs text-stone-500 sm:col-span-2">
+              Customers see these details after ordering and use the order number as the transfer note. Confirm each payment from the order page.
+            </p>
+          </div>
+        </section>
       </div>
 
       <!-- Theme -->
