@@ -3,6 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { errorMessage, fieldErrors, http } from '@/api/client'
 import type { Address, SavedAddress } from '@/api/types'
 import AccountShell from '@/components/AccountShell.vue'
+import { t } from '@/i18n'
 import { useCustomerStore } from '@/stores/customer'
 
 const customer = useCustomerStore()
@@ -76,24 +77,24 @@ function makeDefault(a: SavedAddress) {
 }
 
 function remove(a: SavedAddress) {
-  if (!confirm(`Delete the address for ${a.recipientName}?`)) return
+  if (!confirm(t('Delete the address for {name}?', { name: a.recipientName }))) return
   return run(() => http.delete(`/storefront/account/addresses/${a.id}`))
 }
 </script>
 
 <template>
-  <AccountShell title="Addresses">
+  <AccountShell :title="$t('Addresses')">
     <template #actions>
-      <button v-if="editing === null" class="btn btn-primary" @click="open()">Add address</button>
+      <button v-if="editing === null" class="btn btn-primary" @click="open()">{{ $t('Add address') }}</button>
     </template>
 
     <p v-if="error" class="alert-error mb-4">{{ error }}</p>
 
     <form v-if="editing !== null" class="card mb-6 p-5" novalidate @submit.prevent="save">
-      <h2 class="font-semibold">{{ editing === 'new' ? 'New address' : 'Edit address' }}</h2>
+      <h2 class="font-semibold">{{ editing === 'new' ? $t('New address') : $t('Edit address') }}</h2>
       <div class="mt-4 grid gap-4 sm:grid-cols-2">
         <div v-for="f in fields" :key="f.key" :class="{ 'sm:col-span-2': f.wide }">
-          <label :for="`addr-${f.key}`" class="label">{{ f.label }}</label>
+          <label :for="`addr-${f.key}`" class="label">{{ $t(f.label) }}</label>
           <input
             :id="`addr-${f.key}`"
             v-model="form[f.key]"
@@ -108,32 +109,32 @@ function remove(a: SavedAddress) {
       </div>
       <label class="mt-4 flex items-center gap-2 text-sm">
         <input v-model="form.isDefault" type="checkbox" class="h-4 w-4 accent-primary" />
-        Use as my default shipping address
+        {{ $t('Use as my default shipping address') }}
       </label>
       <div class="mt-4 flex gap-2">
-        <button type="submit" class="btn btn-primary" :disabled="busy">{{ busy ? 'Saving…' : 'Save address' }}</button>
-        <button type="button" class="btn btn-secondary" :disabled="busy" @click="editing = null">Cancel</button>
+        <button type="submit" class="btn btn-primary" :disabled="busy">{{ busy ? $t('Saving…') : $t('Save address') }}</button>
+        <button type="button" class="btn btn-secondary" :disabled="busy" @click="editing = null">{{ $t('Cancel') }}</button>
       </div>
     </form>
 
-    <p v-if="failed" class="alert-error">We couldn't load your addresses. Please refresh the page.</p>
+    <p v-if="failed" class="alert-error">{{ $t("We couldn't load your addresses. Please refresh the page.") }}</p>
     <div v-else-if="!addresses" class="h-40 animate-pulse rounded-xl bg-stone-200" />
     <div v-else-if="addresses.length === 0 && editing === null" class="card p-10 text-center">
-      <p class="font-medium">No saved addresses</p>
-      <p class="mt-1 text-sm text-stone-600">Save an address to check out faster next time.</p>
+      <p class="font-medium">{{ $t('No saved addresses') }}</p>
+      <p class="mt-1 text-sm text-stone-600">{{ $t('Save an address to check out faster next time.') }}</p>
     </div>
     <ul v-else class="grid gap-4 sm:grid-cols-2">
       <li v-for="a in addresses" :key="a.id" :class="{ 'border-primary': a.isDefault }" class="card flex flex-col p-4 text-sm">
         <p class="font-medium">
           {{ a.recipientName }}
-          <span v-if="a.isDefault" class="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">Default</span>
+          <span v-if="a.isDefault" class="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">{{ $t('Default') }}</span>
         </p>
         <p class="text-stone-600">{{ a.phone }}</p>
         <p class="mt-1 text-stone-600">{{ a.streetAddress }}, {{ a.ward }}, {{ a.district }}, {{ a.province }}</p>
         <div class="mt-auto flex flex-wrap gap-3 pt-3 text-sm">
-          <button class="link" :disabled="busy" @click="open(a)">Edit</button>
-          <button v-if="!a.isDefault" class="link" :disabled="busy" @click="makeDefault(a)">Set as default</button>
-          <button class="ml-auto text-red-700 hover:underline" :disabled="busy" @click="remove(a)">Delete</button>
+          <button class="link" :disabled="busy" @click="open(a)">{{ $t('Edit') }}</button>
+          <button v-if="!a.isDefault" class="link" :disabled="busy" @click="makeDefault(a)">{{ $t('Set as default') }}</button>
+          <button class="ml-auto text-red-700 hover:underline" :disabled="busy" @click="remove(a)">{{ $t('Delete') }}</button>
         </div>
       </li>
     </ul>

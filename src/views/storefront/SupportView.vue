@@ -67,22 +67,22 @@ const statusStyles: Record<TicketSummary['status'], string> = {
 </script>
 
 <template>
-  <AccountShell title="Customer support">
+  <AccountShell :title="$t('Customer support')">
     <template #actions>
-      <button v-if="!showForm" class="btn btn-primary" @click="showForm = true">New request</button>
+      <button v-if="!showForm" class="btn btn-primary" @click="showForm = true">{{ $t('New request') }}</button>
     </template>
 
     <form v-if="showForm" class="card mb-6 space-y-4 p-5" novalidate @submit.prevent="submit">
-      <h2 class="font-semibold">How can we help?</h2>
+      <h2 class="font-semibold">{{ $t('How can we help?') }}</h2>
       <div>
-        <label for="subject" class="label">Subject</label>
+        <label for="subject" class="label">{{ $t('Subject') }}</label>
         <input id="subject" v-model="form.subject" maxlength="200" required :class="{ 'input-error': errors.subject }" class="input" />
         <p v-if="errors.subject" class="field-error">{{ errors.subject }}</p>
       </div>
       <div>
-        <label for="order" class="label">Related order (optional)</label>
+        <label for="order" class="label">{{ $t('Related order (optional)') }}</label>
         <select id="order" v-model="form.orderNumber" class="input">
-          <option value="">Not about a specific order</option>
+          <option value="">{{ $t('Not about a specific order') }}</option>
           <option v-if="form.orderNumber && !orders.some((o) => o.orderNumber === form.orderNumber)" :value="form.orderNumber">
             {{ form.orderNumber }}
           </option>
@@ -90,23 +90,23 @@ const statusStyles: Record<TicketSummary['status'], string> = {
         </select>
       </div>
       <div>
-        <label for="message" class="label">Message</label>
+        <label for="message" class="label">{{ $t('Message') }}</label>
         <textarea id="message" v-model="form.message" rows="5" maxlength="4000" required :class="{ 'input-error': errors.message }" class="input" />
         <p v-if="errors.message" class="field-error">{{ errors.message }}</p>
       </div>
       <p v-if="submitError" class="alert-error">{{ submitError }}</p>
       <div class="flex gap-2">
-        <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? 'Sending…' : 'Send' }}</button>
-        <button type="button" class="btn btn-secondary" @click="showForm = false">Cancel</button>
+        <button type="submit" class="btn btn-primary" :disabled="submitting">{{ submitting ? $t('Sending…') : $t('Send') }}</button>
+        <button type="button" class="btn btn-secondary" @click="showForm = false">{{ $t('Cancel') }}</button>
       </div>
     </form>
 
-    <p v-if="failed" class="alert-error">We couldn't load your requests. Please refresh the page.</p>
+    <p v-if="failed" class="alert-error">{{ $t("We couldn't load your requests. Please refresh the page.") }}</p>
     <div v-else-if="!result" class="h-40 animate-pulse rounded-xl bg-stone-200" />
     <div v-else-if="result.items.length === 0 && !showForm" class="card p-10 text-center">
-      <p class="font-medium">No support requests yet</p>
-      <p class="mt-1 text-sm text-stone-600">Questions about an order, a product or a return? Send us a message.</p>
-      <p v-if="tenant.info?.contactPhone" class="mt-3 text-sm text-stone-600">Prefer to call? {{ tenant.info.contactPhone }}</p>
+      <p class="font-medium">{{ $t('No support requests yet') }}</p>
+      <p class="mt-1 text-sm text-stone-600">{{ $t('Questions about an order, a product or a return? Send us a message.') }}</p>
+      <p v-if="tenant.info?.contactPhone" class="mt-3 text-sm text-stone-600">{{ $t('Prefer to call?') }} {{ tenant.info.contactPhone }}</p>
     </div>
     <template v-else-if="result.items.length">
       <ul class="card divide-y divide-stone-100">
@@ -116,12 +116,12 @@ const statusStyles: Record<TicketSummary['status'], string> = {
               <p class="truncate font-medium">{{ t.subject }}</p>
               <p class="text-sm text-stone-500">
                 <span class="font-mono">{{ t.number }}</span>
-                <template v-if="t.orderNumber"> · Order <span class="font-mono">{{ t.orderNumber }}</span></template>
+                <template v-if="t.orderNumber"> · {{ $t('Order') }} <span class="font-mono">{{ t.orderNumber }}</span></template>
                 · {{ timeAgo(t.lastMessageAt) }}
               </p>
             </div>
             <span :class="statusStyles[t.status]" class="rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset">
-              {{ ticketStatusLabels[t.status] }}
+              {{ $t(ticketStatusLabels[t.status]) }}
             </span>
           </RouterLink>
         </li>

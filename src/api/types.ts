@@ -32,6 +32,9 @@ export interface BankTransferInfo {
 export type FontFamily = 'system' | 'inter' | 'be-vietnam-pro' | 'nunito' | 'lora' | 'playfair'
 export type CornerStyle = 'sharp' | 'rounded' | 'pill'
 export type SidebarStyle = 'dark' | 'light' | 'brand'
+export type SidebarPosition = 'left' | 'right' | 'top'
+/** 'system' follows the visitor's OS setting. */
+export type ColorMode = 'light' | 'dark' | 'system'
 export type SidebarKey =
   | 'dashboard'
   | 'orders'
@@ -52,6 +55,7 @@ export interface StorefrontTheme {
   heroSubtitle: string | null
   heroImageUrl: string | null
   announcementText: string | null
+  colorMode: ColorMode
 }
 
 export interface SidebarItem {
@@ -60,15 +64,21 @@ export interface SidebarItem {
   visible: boolean
 }
 
+/** Admin view: the storefront text fields hold Vietnamese, with the English alongside. */
 export interface Appearance extends StorefrontTheme {
+  heroTitleEn: string | null
+  heroSubtitleEn: string | null
+  announcementTextEn: string | null
   sidebarStyle: SidebarStyle
   sidebarCompact: boolean
+  sidebarPosition: SidebarPosition
   sidebarItems: SidebarItem[]
 }
 
 export interface ShopSettings {
   slug: string
   name: string
+  nameEn: string
   logoUrl: string | null
   primaryColor: string
   contactEmail: string | null
@@ -91,7 +101,9 @@ export interface CategoryRef {
   slug: string
 }
 
+/** `name` is in the reader's language on the storefront; admin gets the Vietnamese in `name` and the English in `nameEn`. */
 export interface Category extends CategoryRef {
+  nameEn: string
   parentId: string | null
   sortOrder: number
   isActive: boolean
@@ -164,6 +176,7 @@ export interface MembershipQuote {
 export interface VoucherQuote {
   code: string
   description: string | null
+  descriptionEn: string | null
   type: VoucherType
   discountMinor: number
   /** False when the code can't be used right now; `message` says why. */
@@ -294,10 +307,13 @@ export interface AdminAuth {
 export interface AdminProduct {
   id: string
   name: string
+  nameEn: string
   slug: string
   description: string | null
+  descriptionEn: string | null
   categoryId: string | null
   categoryName: string | null
+  categoryNameEn: string | null
   priceMinor: number
   compareAtPriceMinor: number | null
   currency: string
@@ -306,6 +322,8 @@ export interface AdminProduct {
   isActive: boolean
   images: string[]
   attributes: Record<string, string>
+  /** English name and value of each specification, keyed by its Vietnamese name. */
+  attributesEn: Record<string, AttributeText>
   updatedAt: string
   createdAt: string
   lowStockThreshold: number
@@ -316,9 +334,15 @@ export interface AdminProduct {
   suggestedProducts: ProductRef[]
 }
 
+export interface AttributeText {
+  name: string
+  value: string
+}
+
 export interface ProductRef {
   id: string
   name: string
+  nameEn: string
   sku: string | null
   imageUrl: string | null
   isActive: boolean
@@ -326,8 +350,10 @@ export interface ProductRef {
 
 export interface SaveProduct {
   name: string
+  nameEn: string
   slug: string | null
   description: string | null
+  descriptionEn: string | null
   categoryId: string | null
   priceMinor: number
   compareAtPriceMinor: number | null
@@ -336,6 +362,7 @@ export interface SaveProduct {
   isActive: boolean
   images: string[]
   attributes: Record<string, string>
+  attributesEn: Record<string, AttributeText>
   lowStockThreshold: number
   isFeatured: boolean
   suggestedProductIds: string[]
@@ -343,6 +370,7 @@ export interface SaveProduct {
 
 export interface SaveCategory {
   name: string
+  nameEn: string
   slug: string | null
   parentId: string | null
   sortOrder: number
@@ -470,6 +498,7 @@ export type PromotionStatus = 'Active' | 'Scheduled' | 'Expired' | 'Used up' | '
 export interface Discount {
   id: string
   name: string
+  nameEn: string
   type: DiscountType
   value: number
   scope: DiscountScope
@@ -487,6 +516,7 @@ export interface Voucher {
   id: string
   code: string
   description: string | null
+  descriptionEn: string | null
   type: VoucherType
   value: number
   maxDiscountMinor: number | null
@@ -502,13 +532,16 @@ export interface Voucher {
 
 export type SaveVoucher = Omit<Voucher, 'id' | 'status' | 'usedCount'>
 
+/** Admin: `name`/`benefits` are Vietnamese with the English alongside. Shoppers get them in their language. */
 export interface MembershipTier {
   id: string
   name: string
+  nameEn: string
   minSpentMinor: number
   discountPercent: number
   color: string
   benefits: string | null
+  benefitsEn: string | null
   memberCount: number
 }
 

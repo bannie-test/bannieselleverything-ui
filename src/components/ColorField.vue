@@ -10,8 +10,8 @@ const model = defineModel<string>({ required: true })
       <input
         v-model="model"
         type="color"
-        class="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-stone-300 bg-white p-1"
-        :aria-label="`${label} picker`"
+        class="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-stone-300 bg-surface p-1"
+        :aria-label="$t('{label} picker', { label })"
       />
       <input :id="id" v-model.trim="model" maxlength="7" :class="{ 'input-error': error }" class="input w-28 font-mono uppercase" />
     </div>

@@ -13,7 +13,7 @@ defineProps<{ product: ProductSummary }>()
   <div class="group relative">
     <RouterLink
       :to="{ name: 'product', params: { slug: product.slug } }"
-      class="flex h-full flex-col overflow-hidden rounded-xl border border-stone-200 bg-white transition hover:shadow-md"
+      class="flex h-full flex-col overflow-hidden rounded-xl border border-stone-200 bg-surface transition hover:shadow-md"
     >
       <div class="relative aspect-square overflow-hidden bg-stone-100">
         <img
@@ -23,9 +23,9 @@ defineProps<{ product: ProductSummary }>()
           loading="lazy"
           class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
         />
-        <span v-if="!product.inStock" class="absolute top-2 left-2 rounded-full bg-stone-900/80 px-2.5 py-1 text-xs font-medium text-white">Sold out</span>
-        <span v-else-if="product.discountedPriceMinor !== null" class="absolute top-2 left-2 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-on-accent">Sale</span>
-        <span v-if="product.inStock && product.lowStock" class="absolute right-2 bottom-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-amber-800">Almost gone</span>
+        <span v-if="!product.inStock" class="theme-light absolute top-2 left-2 rounded-full bg-stone-900/80 px-2.5 py-1 text-xs font-medium text-white">{{ $t('Sold out') }}</span>
+        <span v-else-if="product.discountedPriceMinor !== null" class="absolute top-2 left-2 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-on-accent">{{ $t('Sale') }}</span>
+        <span v-if="product.inStock && product.lowStock" class="absolute right-2 bottom-2 rounded-full bg-surface/90 px-2 py-0.5 text-xs font-medium text-amber-800">{{ $t('Almost gone') }}</span>
       </div>
       <div class="flex flex-1 flex-col gap-1 p-3 sm:p-4">
         <p v-if="product.category" class="text-xs text-stone-500">{{ product.category.name }}</p>

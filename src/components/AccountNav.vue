@@ -20,7 +20,7 @@ function isActive(name: string) {
 </script>
 
 <template>
-  <nav class="flex gap-1 overflow-x-auto pb-2 text-sm lg:flex-col lg:overflow-visible" aria-label="Account">
+  <nav class="flex gap-1 overflow-x-auto pb-2 text-sm lg:flex-col lg:overflow-visible" :aria-label="$t('Account')">
     <RouterLink
       v-for="link in links"
       :key="link.name"
@@ -28,7 +28,7 @@ function isActive(name: string) {
       :class="isActive(link.name) ? 'bg-primary/10 font-medium text-primary' : 'text-stone-700 hover:bg-stone-100'"
       class="flex shrink-0 items-center justify-between gap-2 rounded-lg px-3 py-2 whitespace-nowrap"
     >
-      {{ link.label }}
+      {{ $t(link.label) }}
       <span
         v-if="link.name === 'notifications' && notifications.unread"
         class="rounded-full bg-primary px-1.5 text-xs font-semibold text-white"

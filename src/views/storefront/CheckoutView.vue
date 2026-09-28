@@ -5,6 +5,7 @@ import { errorMessage, fieldErrors, http, LAST_ORDER_EMAIL_KEY } from '@/api/cli
 import type { Address, Order, PaymentMethod, SavedAddress } from '@/api/types'
 import CartTotals from '@/components/CartTotals.vue'
 import VoucherBox from '@/components/VoucherBox.vue'
+import { t } from '@/i18n'
 import { useCartStore } from '@/stores/cart'
 import { useCustomerStore } from '@/stores/customer'
 import { useTenantStore } from '@/stores/tenant'
@@ -97,7 +98,7 @@ async function placeOrder() {
     await router.replace({ name: 'order', params: { number: data.orderNumber }, query: { placed: '1' } })
   } catch (error) {
     errors.value = fieldErrors(error)
-    submitError.value = Object.keys(errors.value).length ? 'Please fix the highlighted fields.' : errorMessage(error)
+    submitError.value = Object.keys(errors.value).length ? t('Please fix the highlighted fields.') : errorMessage(error)
     // Stock or price problems: refresh the cart so the summary shows what changed.
     cartStore.load().catch(() => {})
   } finally {
@@ -107,25 +108,25 @@ async function placeOrder() {
 </script>
 
 <template>
-  <h1 class="text-2xl font-semibold">Checkout</h1>
+  <h1 class="text-2xl font-semibold">{{ $t('Checkout') }}</h1>
 
   <div v-if="cartStore.loaded && cart.items.length === 0" class="card mt-6 p-10 text-center">
-    <p class="font-medium">Your cart is empty</p>
-    <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-5">Start shopping</RouterLink>
+    <p class="font-medium">{{ $t('Your cart is empty') }}</p>
+    <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-5">{{ $t('Start shopping') }}</RouterLink>
   </div>
 
   <form v-else class="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem]" novalidate @submit.prevent="placeOrder">
     <div class="space-y-6">
       <section class="card p-5">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <h2 class="font-semibold">Contact</h2>
+          <h2 class="font-semibold">{{ $t('Contact') }}</h2>
           <p v-if="!customer.isSignedIn" class="text-sm text-stone-600">
-            Have an account?
-            <RouterLink :to="{ name: 'login', query: { redirect: '/checkout' } }" class="link">Sign in</RouterLink>
+            {{ $t('Have an account?') }}
+            <RouterLink :to="{ name: 'login', query: { redirect: '/checkout' } }" class="link">{{ $t('Sign in') }}</RouterLink>
           </p>
         </div>
         <div class="mt-4">
-          <label for="email" class="label">Email</label>
+          <label for="email" class="label">{{ $t('Email') }}</label>
           <input
             id="email"
             v-model="email"
@@ -137,13 +138,13 @@ async function placeOrder() {
             class="input"
           />
           <p v-if="errors.email" class="field-error">{{ errors.email }}</p>
-          <p v-else class="mt-1 text-xs text-stone-500">We'll send order updates here. You'll need it to track a guest order.</p>
+          <p v-else class="mt-1 text-xs text-stone-500">{{ $t("We'll send order updates here. You'll need it to track a guest order.") }}</p>
         </div>
       </section>
 
       <section class="card p-5">
-        <h2 class="font-semibold">Shipping address</h2>
-        <div v-if="savedAddresses.length" class="mt-4 space-y-2" role="radiogroup" aria-label="Saved addresses">
+        <h2 class="font-semibold">{{ $t('Shipping address') }}</h2>
+        <div v-if="savedAddresses.length" class="mt-4 space-y-2" role="radiogroup" :aria-label="$t('Saved addresses')">
           <label
             v-for="a in savedAddresses"
             :key="a.id"
@@ -153,7 +154,7 @@ async function placeOrder() {
             <input v-model="addressChoice" type="radio" name="address" :value="a.id" class="mt-1 h-4 w-4 accent-primary" />
             <span>
               <span class="font-medium">{{ a.recipientName }}</span> · {{ a.phone }}
-              <span v-if="a.isDefault" class="ml-1 rounded bg-stone-100 px-1.5 py-0.5 text-xs text-stone-600">Default</span>
+              <span v-if="a.isDefault" class="ml-1 rounded bg-stone-100 px-1.5 py-0.5 text-xs text-stone-600">{{ $t('Default') }}</span>
               <span class="block text-stone-600">{{ a.streetAddress }}, {{ a.ward }}, {{ a.district }}, {{ a.province }}</span>
             </span>
           </label>
@@ -162,12 +163,12 @@ async function placeOrder() {
             class="flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 text-sm font-medium"
           >
             <input v-model="addressChoice" type="radio" name="address" value="new" class="h-4 w-4 accent-primary" />
-            Ship to a different address
+            {{ $t('Ship to a different address') }}
           </label>
         </div>
         <div v-if="addressChoice === 'new'" class="mt-4 grid gap-4 sm:grid-cols-2">
           <div v-for="f in fields" :key="f.key" :class="{ 'sm:col-span-2': f.wide }">
-            <label :for="f.key" class="label">{{ f.label }}</label>
+            <label :for="f.key" class="label">{{ $t(f.label) }}</label>
             <input
               :id="f.key"
               v-model="address[f.key]"
@@ -182,21 +183,21 @@ async function placeOrder() {
         </div>
         <label v-if="customer.isSignedIn && addressChoice === 'new'" class="mt-4 flex items-center gap-2 text-sm">
           <input v-model="saveAddress" type="checkbox" class="h-4 w-4 accent-primary" />
-          Save this address to my account
+          {{ $t('Save this address to my account') }}
         </label>
       </section>
 
       <section class="card p-5">
-        <h2 class="font-semibold">Payment</h2>
-        <div class="mt-3 space-y-2" role="radiogroup" aria-label="Payment method">
+        <h2 class="font-semibold">{{ $t('Payment') }}</h2>
+        <div class="mt-3 space-y-2" role="radiogroup" :aria-label="$t('Payment method')">
           <label
             :class="paymentMethod === 'CashOnDelivery' ? 'border-primary bg-primary/5' : 'border-stone-200 hover:border-stone-300'"
             class="flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 text-sm"
           >
             <input v-model="paymentMethod" type="radio" name="payment" value="CashOnDelivery" class="h-4 w-4 accent-primary" />
             <span>
-              <span class="block font-medium">Cash on delivery</span>
-              <span class="text-stone-600">Pay the courier when your order arrives.</span>
+              <span class="block font-medium">{{ $t('Cash on delivery') }}</span>
+              <span class="text-stone-600">{{ $t('Pay the courier when your order arrives.') }}</span>
             </span>
           </label>
           <label
@@ -206,26 +207,26 @@ async function placeOrder() {
           >
             <input v-model="paymentMethod" type="radio" name="payment" value="BankTransfer" class="h-4 w-4 accent-primary" />
             <span>
-              <span class="block font-medium">Bank transfer</span>
+              <span class="block font-medium">{{ $t('Bank transfer') }}</span>
               <span class="text-stone-600">
-                Transfer to {{ tenant.info.bankTransfer.bankName }} after placing the order. We ship once the payment arrives.
+                {{ $t('Transfer to {bank} after placing the order. We ship once the payment arrives.', { bank: tenant.info.bankTransfer.bankName }) }}
               </span>
             </span>
           </label>
         </div>
-        <label for="notes" class="label mt-4">Order note (optional)</label>
-        <textarea id="notes" v-model="notes" rows="2" maxlength="2000" class="input" placeholder="Delivery instructions, gift message…" />
+        <label for="notes" class="label mt-4">{{ $t('Order note (optional)') }}</label>
+        <textarea id="notes" v-model="notes" rows="2" maxlength="2000" class="input" :placeholder="$t('Delivery instructions, gift message…')" />
       </section>
     </div>
 
     <aside class="card h-fit p-5 lg:sticky lg:top-32">
-      <h2 class="font-semibold">Your order</h2>
+      <h2 class="font-semibold">{{ $t('Your order') }}</h2>
       <ul class="mt-4 max-h-64 space-y-3 overflow-y-auto text-sm">
         <li v-for="item in cart.items" :key="item.productId" class="flex justify-between gap-3">
           <span class="min-w-0">
             <span class="line-clamp-1">{{ item.name }}</span>
             <span class="text-stone-500">× {{ item.quantity }}</span>
-            <span v-if="!item.available" class="block text-xs text-red-600">Not enough stock</span>
+            <span v-if="!item.available" class="block text-xs text-red-600">{{ $t('Not enough stock') }}</span>
           </span>
           <span class="text-right whitespace-nowrap">
             {{ money(item.lineTotalMinor - item.discountMinor, cart.currency) }}
@@ -237,12 +238,12 @@ async function placeOrder() {
         <VoucherBox />
       </div>
       <CartTotals class="mt-4 border-t border-stone-100 pt-4" :cart="cart" />
-      <p v-if="voucherBlocked" class="alert-error mt-4">Remove the voucher that can't be used, or fix what it needs, to place your order.</p>
+      <p v-if="voucherBlocked" class="alert-error mt-4">{{ $t("Remove the voucher that can't be used, or fix what it needs, to place your order.") }}</p>
       <p v-if="submitError" class="alert-error mt-4">{{ submitError }}</p>
       <button type="submit" class="btn btn-primary btn-lg mt-5 w-full" :disabled="submitting || !cartStore.loaded || voucherBlocked">
-        {{ submitting ? 'Placing order…' : 'Place order' }}
+        {{ submitting ? $t('Placing order…') : $t('Place order') }}
       </button>
-      <RouterLink :to="{ name: 'cart' }" class="mt-3 block text-center text-sm text-stone-600 hover:text-primary">Back to cart</RouterLink>
+      <RouterLink :to="{ name: 'cart' }" class="mt-3 block text-center text-sm text-stone-600 hover:text-primary">{{ $t('Back to cart') }}</RouterLink>
     </aside>
   </form>
 </template>

@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { errorMessage, http, LAST_ORDER_EMAIL_KEY } from '@/api/client'
 import type { Order } from '@/api/types'
 import OrderDetails from '@/components/OrderDetails.vue'
+import { t } from '@/i18n'
 import { useCustomerStore } from '@/stores/customer'
 import { useTenantStore } from '@/stores/tenant'
 import { storage } from '@/utils/storage'
@@ -49,7 +50,7 @@ async function load(number: string) {
 watch(() => route.params.number, (n) => typeof n === 'string' && load(n), { immediate: true })
 
 async function cancel() {
-  if (!order.value || !confirm('Cancel this order?')) return
+  if (!order.value || !confirm(t('Cancel this order?'))) return
   cancelling.value = true
   error.value = null
   try {
@@ -65,15 +66,15 @@ async function cancel() {
 <template>
   <div class="mx-auto max-w-3xl">
     <div v-if="justPlaced && order" class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
-      <h1 class="text-xl font-semibold">Thank you! Your order has been placed.</h1>
+      <h1 class="text-xl font-semibold">{{ $t('Thank you! Your order has been placed.') }}</h1>
       <p class="mt-1 text-sm">
-        {{ order.status === 'AwaitingPayment' ? 'Complete the bank transfer below and we will ship it once payment arrives.' : "We'll confirm it shortly." }}
-        Keep your order number <span class="font-mono font-semibold">{{ order.orderNumber }}</span> to track it.
+        {{ order.status === 'AwaitingPayment' ? $t('Complete the bank transfer below and we will ship it once payment arrives.') : $t("We'll confirm it shortly.") }}
+        {{ $t('Keep your order number') }} <span class="font-mono font-semibold">{{ order.orderNumber }}</span> {{ $t('to track it.') }}
       </p>
     </div>
     <div v-else class="mb-4 flex items-center justify-between">
-      <h1 class="text-2xl font-semibold">Order details</h1>
-      <RouterLink v-if="customer.isSignedIn" :to="{ name: 'my-orders' }" class="link text-sm">← My orders</RouterLink>
+      <h1 class="text-2xl font-semibold">{{ $t('Order details') }}</h1>
+      <RouterLink v-if="customer.isSignedIn" :to="{ name: 'my-orders' }" class="link text-sm">← {{ $t('My orders') }}</RouterLink>
     </div>
 
     <p v-if="error" class="alert-error mb-4">{{ error }}</p>
@@ -82,20 +83,20 @@ async function cancel() {
     <template v-if="order">
       <OrderDetails :order="order" :bank-transfer="tenant.info?.bankTransfer" />
       <div class="mt-6 flex flex-wrap gap-3">
-        <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary">Continue shopping</RouterLink>
+        <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary">{{ $t('Continue shopping') }}</RouterLink>
         <RouterLink
           v-if="customer.isSignedIn && !order.isGuest"
           :to="{ name: 'support', query: { order: order.orderNumber } }"
           class="btn btn-secondary"
         >
-          Get help with this order
+          {{ $t('Get help with this order') }}
         </RouterLink>
         <button v-if="order.canCancel && customer.isSignedIn" class="btn btn-danger" :disabled="cancelling" @click="cancel">
-          {{ cancelling ? 'Cancelling…' : 'Cancel order' }}
+          {{ cancelling ? $t('Cancelling…') : $t('Cancel order') }}
         </button>
       </div>
       <p v-if="order.isGuest && (order.status === 'Pending' || order.status === 'AwaitingPayment')" class="mt-3 text-sm text-stone-600">
-        Need to change or cancel this order? Contact the shop with your order number.
+        {{ $t('Need to change or cancel this order? Contact the shop with your order number.') }}
       </p>
     </template>
   </div>

@@ -5,6 +5,7 @@ import { errorMessage, http } from '@/api/client'
 import type { Ticket } from '@/api/types'
 import AccountShell from '@/components/AccountShell.vue'
 import SupportThread from '@/components/SupportThread.vue'
+import { t } from '@/i18n'
 import { ticketStatusLabels } from '@/utils/format'
 
 const route = useRoute()
@@ -23,7 +24,7 @@ watch(
     try {
       ticket.value = (await http.get<Ticket>(url())).data
     } catch (e) {
-      error.value = errorMessage(e, 'Request not found.')
+      error.value = errorMessage(e, t('Request not found.'))
     }
   },
   { immediate: true },
@@ -56,9 +57,9 @@ async function close() {
 </script>
 
 <template>
-  <AccountShell :title="ticket?.subject ?? 'Support request'">
+  <AccountShell :title="ticket?.subject ?? $t('Support request')">
     <template #actions>
-      <RouterLink :to="{ name: 'support' }" class="link text-sm">← All requests</RouterLink>
+      <RouterLink :to="{ name: 'support' }" class="link text-sm">← {{ $t('All requests') }}</RouterLink>
     </template>
 
     <p v-if="error" class="alert-error mb-4">{{ error }}</p>
@@ -66,9 +67,9 @@ async function close() {
 
     <template v-if="ticket">
       <p class="mb-4 text-sm text-stone-600">
-        <span class="font-mono">{{ ticket.number }}</span> · {{ ticketStatusLabels[ticket.status] }}
+        <span class="font-mono">{{ ticket.number }}</span> · {{ $t(ticketStatusLabels[ticket.status]) }}
         <template v-if="ticket.orderNumber">
-          · Order
+          · {{ $t('Order') }}
           <RouterLink :to="{ name: 'order', params: { number: ticket.orderNumber } }" class="link font-mono">{{ ticket.orderNumber }}</RouterLink>
         </template>
       </p>
@@ -76,12 +77,12 @@ async function close() {
       <SupportThread :messages="ticket.messages" own="Customer" />
 
       <form class="card mt-4 space-y-3 p-4" @submit.prevent="send">
-        <label for="reply" class="label">{{ ticket.status === 'Closed' ? 'Reply to reopen this request' : 'Reply' }}</label>
+        <label for="reply" class="label">{{ ticket.status === 'Closed' ? $t('Reply to reopen this request') : $t('Reply') }}</label>
         <textarea id="reply" v-model="reply" rows="3" maxlength="4000" class="input" />
         <div class="flex flex-wrap gap-2">
-          <button type="submit" class="btn btn-primary" :disabled="busy || !reply.trim()">{{ busy ? 'Sending…' : 'Send' }}</button>
+          <button type="submit" class="btn btn-primary" :disabled="busy || !reply.trim()">{{ busy ? $t('Sending…') : $t('Send') }}</button>
           <button v-if="ticket.status !== 'Closed'" type="button" class="btn btn-secondary ml-auto" :disabled="busy" @click="close">
-            Mark as resolved
+            {{ $t('Mark as resolved') }}
           </button>
         </div>
       </form>

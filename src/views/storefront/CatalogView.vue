@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { http } from '@/api/client'
 import type { Paged, ProductSummary } from '@/api/types'
 import PaginationBar from '@/components/PaginationBar.vue'
+import { t } from '@/i18n'
 import ProductCard from '@/components/ProductCard.vue'
 import { useTenantStore } from '@/stores/tenant'
 import { minorDigits } from '@/utils/format'
@@ -54,8 +55,8 @@ function clearFilters() {
 
 const currentCategory = computed(() => tenant.categories.find((c) => c.slug === category.value))
 const heading = computed(() => {
-  if (q.value) return `Results for “${q.value}”`
-  return currentCategory.value?.name ?? 'All products'
+  if (q.value) return t('Results for “{q}”', { q: q.value })
+  return currentCategory.value?.name ?? t('All products')
 })
 
 function update(patch: Record<string, string | number | undefined>) {
@@ -100,14 +101,14 @@ watch(
 <template>
   <div class="flex flex-col gap-6 lg:flex-row">
     <aside class="lg:w-56 lg:shrink-0">
-      <h2 class="mb-2 text-sm font-semibold text-stone-500 uppercase">Categories</h2>
+      <h2 class="mb-2 text-sm font-semibold text-stone-500 uppercase">{{ $t('Categories') }}</h2>
       <nav class="flex gap-2 overflow-x-auto pb-2 text-sm lg:flex-col lg:gap-0.5 lg:overflow-visible">
         <RouterLink
           :to="{ name: 'catalog', query: q ? { q } : {} }"
           :class="!category ? 'bg-primary/10 font-medium text-primary' : 'hover:bg-stone-100'"
           class="shrink-0 rounded-lg px-3 py-1.5 whitespace-nowrap"
         >
-          All products
+          {{ $t('All products') }}
         </RouterLink>
         <template v-for="c in tenant.tree()" :key="c.id">
           <RouterLink
@@ -135,39 +136,39 @@ watch(
         aria-controls="catalog-filters"
         @click="filtersOpen = !filtersOpen"
       >
-        {{ filtersOpen ? 'Hide filters' : 'Filters' }}<span v-if="activeFilters" class="h-2 w-2 rounded-full bg-primary" aria-label="active" />
+        {{ filtersOpen ? $t('Hide filters') : $t('Filters') }}<span v-if="activeFilters" class="h-2 w-2 rounded-full bg-primary" :aria-label="$t('active')" />
       </button>
 
       <div id="catalog-filters" :class="filtersOpen ? 'block' : 'hidden lg:block'" class="mt-4 space-y-5 border-t border-stone-200 pt-4 text-sm">
         <div class="flex items-center justify-between">
-          <h2 class="font-semibold text-stone-500 uppercase">Filters</h2>
-          <button v-if="activeFilters" class="text-xs text-primary hover:underline" @click="clearFilters">Clear</button>
+          <h2 class="font-semibold text-stone-500 uppercase">{{ $t('Filters') }}</h2>
+          <button v-if="activeFilters" class="text-xs text-primary hover:underline" @click="clearFilters">{{ $t('Clear') }}</button>
         </div>
 
         <form class="space-y-2" @submit.prevent="applyPrice">
-          <p class="font-medium">Price ({{ currency }})</p>
+          <p class="font-medium">{{ $t('Price ({currency})', { currency }) }}</p>
           <div class="flex items-center gap-2">
-            <input v-model="priceInputs.min" type="number" min="0" inputmode="numeric" placeholder="Min" class="input" aria-label="Minimum price" />
+            <input v-model="priceInputs.min" type="number" min="0" inputmode="numeric" :placeholder="$t('Min')" class="input" :aria-label="$t('Minimum price')" />
             <span class="text-stone-400">–</span>
-            <input v-model="priceInputs.max" type="number" min="0" inputmode="numeric" placeholder="Max" class="input" aria-label="Maximum price" />
+            <input v-model="priceInputs.max" type="number" min="0" inputmode="numeric" :placeholder="$t('Max')" class="input" :aria-label="$t('Maximum price')" />
           </div>
-          <button type="submit" class="btn btn-secondary w-full py-1.5">Apply</button>
+          <button type="submit" class="btn btn-secondary w-full py-1.5">{{ $t('Apply') }}</button>
         </form>
 
         <fieldset class="space-y-2">
-          <legend class="mb-2 font-medium">Availability</legend>
+          <legend class="mb-2 font-medium">{{ $t('Availability') }}</legend>
           <label class="flex items-center gap-2">
             <input type="checkbox" class="h-4 w-4 accent-primary" :checked="inStock" @change="update({ inStock: inStock ? undefined : '1', page: undefined })" />
-            In stock only
+            {{ $t('In stock only') }}
           </label>
           <label class="flex items-center gap-2">
             <input type="checkbox" class="h-4 w-4 accent-primary" :checked="onSale" @change="update({ onSale: onSale ? undefined : '1', page: undefined })" />
-            On sale
+            {{ $t('On sale') }}
           </label>
         </fieldset>
 
         <fieldset class="space-y-2">
-          <legend class="mb-2 font-medium">Customer rating</legend>
+          <legend class="mb-2 font-medium">{{ $t('Customer rating') }}</legend>
           <label v-for="r in [undefined, 4, 3, 2]" :key="r ?? 'any'" class="flex items-center gap-2">
             <input
               type="radio"
@@ -176,7 +177,7 @@ watch(
               :checked="minRating === r"
               @change="update({ minRating: r, page: undefined })"
             />
-            {{ r ? `${r}★ & up` : 'Any rating' }}
+            {{ r ? $t('{n}★ & up', { n: r }) : $t('Any rating') }}
           </label>
         </fieldset>
       </div>
@@ -186,30 +187,30 @@ watch(
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 class="text-2xl font-semibold">{{ heading }}</h1>
-          <p v-if="result" class="text-sm text-stone-500">{{ result.totalCount }} product{{ result.totalCount === 1 ? '' : 's' }}</p>
+          <p v-if="result" class="text-sm text-stone-500">{{ result.totalCount === 1 ? $t('1 product') : $t('{n} products', { n: result.totalCount }) }}</p>
         </div>
         <label class="flex items-center gap-2 text-sm">
-          <span class="text-stone-600">Sort by</span>
+          <span class="text-stone-600">{{ $t('Sort by') }}</span>
           <select :value="sort" class="input w-auto" @change="update({ sort: ($event.target as HTMLSelectElement).value, page: undefined })">
-            <option value="newest">Newest</option>
-            <option value="price_asc">Price: low to high</option>
-            <option value="price_desc">Price: high to low</option>
-            <option value="rating">Top rated</option>
-            <option value="name">Name</option>
+            <option value="newest">{{ $t('Newest') }}</option>
+            <option value="price_asc">{{ $t('Price: low to high') }}</option>
+            <option value="price_desc">{{ $t('Price: high to low') }}</option>
+            <option value="rating">{{ $t('Top rated') }}</option>
+            <option value="name">{{ $t('Name') }}</option>
           </select>
         </label>
       </div>
 
-      <p v-if="failed" class="alert-error">We couldn't load products. Please try again.</p>
+      <p v-if="failed" class="alert-error">{{ $t("We couldn't load products. Please try again.") }}</p>
 
       <div v-else-if="loading && !result" class="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
         <div v-for="i in 6" :key="i" class="aspect-[3/4] animate-pulse rounded-xl bg-stone-200" />
       </div>
 
       <div v-else-if="result && result.items.length === 0" class="card p-10 text-center">
-        <p class="font-medium">No products found</p>
-        <p class="mt-1 text-sm text-stone-600">Try a different search, loosen the filters or browse all products.</p>
-        <RouterLink :to="{ name: 'catalog' }" class="btn btn-secondary mt-4">Clear filters</RouterLink>
+        <p class="font-medium">{{ $t('No products found') }}</p>
+        <p class="mt-1 text-sm text-stone-600">{{ $t('Try a different search, loosen the filters or browse all products.') }}</p>
+        <RouterLink :to="{ name: 'catalog' }" class="btn btn-secondary mt-4">{{ $t('Clear filters') }}</RouterLink>
       </div>
 
       <template v-else-if="result">

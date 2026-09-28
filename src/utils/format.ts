@@ -1,4 +1,5 @@
 import type { OrderStatus, PaymentMethod, TicketStatus } from '@/api/types'
+import { intlLocale, t } from '@/i18n'
 
 const moneyFormatters = new Map<string, Intl.NumberFormat>()
 
@@ -18,12 +19,24 @@ export function minorDigits(currency = 'VND'): number {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 0
 }
 
-const dateTime = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+const dateFormatters = new Map<string, Intl.DateTimeFormat>()
 
-export function formatDateTime(iso: string): string {
-  return dateTime.format(new Date(iso))
+/** Date formatter for the current language, cached per language and style. */
+function dates(style: 'date' | 'dateTime'): Intl.DateTimeFormat {
+  const key = `${intlLocale()}:${style}`
+  let formatter = dateFormatters.get(key)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(intlLocale(), style === 'date' ? { dateStyle: 'medium' } : { dateStyle: 'medium', timeStyle: 'short' })
+    dateFormatters.set(key, formatter)
+  }
+  return formatter
 }
 
+export function formatDateTime(iso: string): string {
+  return dates('dateTime').format(new Date(iso))
+}
+
+/** English labels; pass them through t() for display. */
 export const statusLabels: Record<OrderStatus, string> = {
   Pending: 'Awaiting confirmation',
   AwaitingPayment: 'Awaiting payment',
@@ -35,7 +48,7 @@ export const statusLabels: Record<OrderStatus, string> = {
   Refunded: 'Refunded',
 }
 
-/** Verb for the button that moves an order into this status. */
+/** Verb for the button (English; pass through t()) that moves an order into this status. */
 export const statusActions: Partial<Record<OrderStatus, string>> = {
   Paid: 'Confirm payment received',
   Processing: 'Confirm & start processing',
@@ -49,11 +62,9 @@ export function discountPercent(price: number, compareAt: number | null): number
   return Math.round((1 - price / compareAt) * 100)
 }
 
-const dateOnly = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' })
-
 /** "2026-09-28" or an ISO timestamp → "28 Sept 2026". */
 export function formatDate(value: string): string {
-  return dateOnly.format(new Date(value.length === 10 ? `${value}T00:00:00` : value))
+  return dates('date').format(new Date(value.length === 10 ? `${value}T00:00:00` : value))
 }
 
 /** ISO timestamp → value for an <input type="datetime-local"> in the browser's time zone. */
@@ -77,31 +88,32 @@ export function isoDate(d = new Date()): string {
 
 /** "10% off", "50.000 ₫ off" or "Free shipping". */
 export function offLabel(type: 'Percentage' | 'FixedAmount' | 'FreeShipping', value: number, currency = 'VND'): string {
-  if (type === 'Percentage') return `${value}% off`
-  if (type === 'FixedAmount') return `${money(value, currency)} off`
-  return 'Free shipping'
+  if (type === 'Percentage') return t('{amount} off', { amount: `${value}%` })
+  if (type === 'FixedAmount') return t('{amount} off', { amount: money(value, currency) })
+  return t('Free shipping')
 }
 
+/** English labels; pass them through t() for display. */
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
   CashOnDelivery: 'Cash on delivery',
   BankTransfer: 'Bank transfer',
 }
 
+/** English labels; pass them through t() for display. */
 export const ticketStatusLabels: Record<TicketStatus, string> = {
   Open: 'Waiting for the shop',
   Answered: 'Shop replied',
   Closed: 'Closed',
 }
 
-const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
-
 /** "5 minutes ago", "yesterday"; falls back to a date after a week. */
 export function timeAgo(iso: string): string {
   const seconds = (new Date(iso).getTime() - Date.now()) / 1000
   const abs = Math.abs(seconds)
-  if (abs < 60) return 'just now'
+  const relative = new Intl.RelativeTimeFormat(intlLocale(), { numeric: 'auto' })
+  if (abs < 60) return t('just now')
   if (abs < 3600) return relative.format(Math.round(seconds / 60), 'minute')
   if (abs < 86400) return relative.format(Math.round(seconds / 3600), 'hour')
   if (abs < 604800) return relative.format(Math.round(seconds / 86400), 'day')
-  return dateOnly.format(new Date(iso))
+  return formatDate(iso)
 }

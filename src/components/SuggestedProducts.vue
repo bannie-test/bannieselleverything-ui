@@ -5,7 +5,7 @@ import type { ProductSummary } from '@/api/types'
 import ProductCard from './ProductCard.vue'
 
 /** "You may also like" for a product (one id) or a cart (several). Renders nothing when there's nothing to suggest. */
-const props = withDefaults(defineProps<{ productIds: string[]; title?: string; limit?: number }>(), { title: 'You may also like', limit: 4 })
+const props = withDefaults(defineProps<{ productIds: string[]; title?: string; limit?: number }>(), { title: undefined, limit: 4 })
 
 const items = ref<ProductSummary[]>([])
 const loading = ref(true)
@@ -32,7 +32,7 @@ watch(
 
 <template>
   <section v-if="loading || items.length" class="mt-12">
-    <h2 class="text-xl font-semibold">{{ title }}</h2>
+    <h2 class="text-xl font-semibold">{{ title ?? $t('You may also like') }}</h2>
     <div class="mt-4 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-4">
       <template v-if="loading">
         <div v-for="i in limit" :key="i" class="aspect-[3/4] animate-pulse rounded-xl bg-stone-200" />

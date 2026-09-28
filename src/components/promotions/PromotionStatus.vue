@@ -13,5 +13,5 @@ const styles: Record<PromotionStatus, string> = {
 </script>
 
 <template>
-  <span :class="styles[status]" class="pill ring-1 ring-inset">{{ status }}</span>
+  <span :class="styles[status]" class="pill ring-1 ring-inset">{{ $t(status) }}</span>
 </template>

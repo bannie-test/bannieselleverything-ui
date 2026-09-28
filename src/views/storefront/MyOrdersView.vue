@@ -29,15 +29,15 @@ watch(
 </script>
 
 <template>
-  <AccountShell title="My orders">
+  <AccountShell :title="$t('My orders')">
     <MembershipCard class="mb-6" />
 
-    <p v-if="failed" class="alert-error">We couldn't load your orders. Please refresh the page.</p>
+    <p v-if="failed" class="alert-error">{{ $t("We couldn't load your orders. Please refresh the page.") }}</p>
     <div v-else-if="!result" class="h-40 animate-pulse rounded-xl bg-stone-200" />
 
     <div v-else-if="result.items.length === 0" class="card p-10 text-center">
-      <p class="font-medium">No orders yet</p>
-      <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-4">Start shopping</RouterLink>
+      <p class="font-medium">{{ $t('No orders yet') }}</p>
+      <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-4">{{ $t('Start shopping') }}</RouterLink>
     </div>
 
     <template v-else>
@@ -46,7 +46,7 @@ watch(
           <RouterLink :to="{ name: 'order', params: { number: o.orderNumber } }" class="flex flex-wrap items-center justify-between gap-3 p-4 hover:bg-stone-50">
             <div>
               <p class="font-mono font-semibold">{{ o.orderNumber }}</p>
-              <p class="text-sm text-stone-500">{{ formatDateTime(o.placedAt) }} · {{ o.itemCount }} item{{ o.itemCount === 1 ? '' : 's' }}</p>
+              <p class="text-sm text-stone-500">{{ formatDateTime(o.placedAt) }} · {{ o.itemCount === 1 ? $t('1 item') : $t('{n} items', { n: o.itemCount }) }}</p>
             </div>
             <div class="flex items-center gap-4">
               <StatusBadge :status="o.status" />

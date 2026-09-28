@@ -40,39 +40,39 @@ watch(
 </script>
 
 <template>
-  <h1 class="text-2xl font-semibold">Orders</h1>
+  <h1 class="text-2xl font-semibold">{{ $t('Orders') }}</h1>
 
   <div class="mt-4 flex flex-wrap items-center gap-3">
     <div class="flex flex-wrap gap-1 rounded-lg bg-stone-100 p-1 text-sm">
       <button
         v-for="s in [undefined, ...statuses]"
         :key="s ?? 'all'"
-        :class="(route.query.status ?? undefined) === s ? 'bg-white shadow-sm font-medium' : 'text-stone-600 hover:text-stone-900'"
+        :class="(route.query.status ?? undefined) === s ? 'bg-surface shadow-sm font-medium' : 'text-stone-600 hover:text-stone-900'"
         class="rounded-md px-3 py-1.5"
         @click="update({ status: s, page: undefined })"
       >
-        {{ s ? statusLabels[s] : 'All' }}
+        {{ s ? $t(statusLabels[s]) : $t('All') }}
       </button>
     </div>
     <form class="ml-auto" @submit.prevent="update({ q: search.trim(), page: undefined })">
-      <input v-model="search" type="search" placeholder="Order number or email" class="input w-64" aria-label="Search orders" />
+      <input v-model="search" type="search" :placeholder="$t('Order number or email')" class="input w-64" :aria-label="$t('Search orders')" />
     </form>
   </div>
 
-  <p v-if="failed" class="alert-error mt-6">Couldn't load orders.</p>
+  <p v-if="failed" class="alert-error mt-6">{{ $t("Couldn't load orders.") }}</p>
   <div v-else-if="!result" class="mt-6 h-64 animate-pulse rounded-xl bg-stone-200" />
-  <div v-else-if="result.items.length === 0" class="card mt-6 p-10 text-center text-stone-600">No orders match.</div>
+  <div v-else-if="result.items.length === 0" class="card mt-6 p-10 text-center text-stone-600">{{ $t('No orders match.') }}</div>
 
   <template v-else>
     <div class="card mt-6 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="border-b border-stone-200 text-left text-xs text-stone-500 uppercase">
           <tr>
-            <th class="px-4 py-3 font-medium">Order</th>
-            <th class="px-4 py-3 font-medium">Customer</th>
-            <th class="px-4 py-3 font-medium">Placed</th>
-            <th class="px-4 py-3 font-medium">Status</th>
-            <th class="px-4 py-3 text-right font-medium">Total</th>
+            <th class="px-4 py-3 font-medium">{{ $t('Order') }}</th>
+            <th class="px-4 py-3 font-medium">{{ $t('Customer') }}</th>
+            <th class="px-4 py-3 font-medium">{{ $t('Placed') }}</th>
+            <th class="px-4 py-3 font-medium">{{ $t('Status') }}</th>
+            <th class="px-4 py-3 text-right font-medium">{{ $t('Total') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100">

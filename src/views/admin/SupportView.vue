@@ -51,38 +51,38 @@ watch(
 </script>
 
 <template>
-  <h1 class="text-2xl font-semibold">Support</h1>
+  <h1 class="text-2xl font-semibold">{{ $t('Support') }}</h1>
 
   <div class="mt-4 flex flex-wrap items-center gap-3">
     <div class="flex flex-wrap gap-1 rounded-lg bg-stone-100 p-1 text-sm">
       <button
         v-for="t in tabs"
         :key="t.label"
-        :class="(route.query.status ?? undefined) === t.status ? 'bg-white font-medium shadow-sm' : 'text-stone-600 hover:text-stone-900'"
+        :class="(route.query.status ?? undefined) === t.status ? 'bg-surface font-medium shadow-sm' : 'text-stone-600 hover:text-stone-900'"
         class="rounded-md px-3 py-1.5"
         @click="update({ status: t.status, page: undefined })"
       >
-        {{ t.label }}
+        {{ $t(t.label) }}
       </button>
     </div>
     <form class="ml-auto" @submit.prevent="update({ q: search.trim(), page: undefined })">
-      <input v-model="search" type="search" placeholder="Ticket, order, subject or email" class="input w-64" aria-label="Search tickets" />
+      <input v-model="search" type="search" :placeholder="$t('Ticket, order, subject or email')" class="input w-64" :aria-label="$t('Search tickets')" />
     </form>
   </div>
 
-  <p v-if="failed" class="alert-error mt-6">Couldn't load support requests.</p>
+  <p v-if="failed" class="alert-error mt-6">{{ $t("Couldn't load support requests.") }}</p>
   <div v-else-if="!result" class="mt-6 h-64 animate-pulse rounded-xl bg-stone-200" />
-  <div v-else-if="result.items.length === 0" class="card mt-6 p-10 text-center text-stone-600">No support requests here.</div>
+  <div v-else-if="result.items.length === 0" class="card mt-6 p-10 text-center text-stone-600">{{ $t('No support requests here.') }}</div>
 
   <template v-else>
     <div class="card mt-6 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="border-b border-stone-200 text-left text-xs text-stone-500 uppercase">
           <tr>
-            <th class="px-4 py-3 font-medium">Request</th>
-            <th class="px-4 py-3 font-medium">Customer</th>
-            <th class="px-4 py-3 font-medium">Last message</th>
-            <th class="px-4 py-3 font-medium">Status</th>
+            <th class="px-4 py-3 font-medium">{{ $t('Request') }}</th>
+            <th class="px-4 py-3 font-medium">{{ $t('Customer') }}</th>
+            <th class="px-4 py-3 font-medium">{{ $t('Last message') }}</th>
+            <th class="px-4 py-3 font-medium">{{ $t('Status') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100">
@@ -102,10 +102,10 @@ watch(
             </td>
             <td class="px-4 py-3 whitespace-nowrap text-stone-600">
               {{ formatDateTime(t.lastMessageAt) }}
-              <p class="text-xs text-stone-500">by {{ t.lastAuthor === 'Staff' ? 'shop' : 'customer' }}</p>
+              <p class="text-xs text-stone-500">{{ t.lastAuthor === 'Staff' ? $t('by shop') : $t('by customer') }}</p>
             </td>
             <td class="px-4 py-3">
-              <span :class="styles[t.status]" class="rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset">{{ labels[t.status] }}</span>
+              <span :class="styles[t.status]" class="rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset">{{ $t(labels[t.status]) }}</span>
             </td>
           </tr>
         </tbody>

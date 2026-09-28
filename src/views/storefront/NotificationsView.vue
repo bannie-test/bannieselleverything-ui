@@ -41,22 +41,22 @@ async function markAllRead() {
 </script>
 
 <template>
-  <AccountShell title="Notifications">
+  <AccountShell :title="$t('Notifications')">
     <template #actions>
-      <button v-if="result?.items.some((n) => !n.isRead)" class="btn btn-secondary" @click="markAllRead">Mark all as read</button>
+      <button v-if="result?.items.some((n) => !n.isRead)" class="btn btn-secondary" @click="markAllRead">{{ $t('Mark all as read') }}</button>
     </template>
 
-    <p v-if="failed" class="alert-error">We couldn't load notifications. Please refresh the page.</p>
+    <p v-if="failed" class="alert-error">{{ $t("We couldn't load notifications. Please refresh the page.") }}</p>
     <div v-else-if="!result" class="h-40 animate-pulse rounded-xl bg-stone-200" />
     <div v-else-if="result.items.length === 0" class="card p-10 text-center">
-      <p class="font-medium">No notifications yet</p>
-      <p class="mt-1 text-sm text-stone-600">Order updates and replies from the shop will show up here.</p>
+      <p class="font-medium">{{ $t('No notifications yet') }}</p>
+      <p class="mt-1 text-sm text-stone-600">{{ $t('Order updates and replies from the shop will show up here.') }}</p>
     </div>
     <template v-else>
       <ul class="card divide-y divide-stone-100">
         <li v-for="n in result.items" :key="n.id">
           <button class="flex w-full items-start gap-3 p-4 text-left hover:bg-stone-50" @click="open(n)">
-            <span :class="n.isRead ? 'bg-transparent' : 'bg-primary'" class="mt-1.5 h-2 w-2 shrink-0 rounded-full" :aria-label="n.isRead ? undefined : 'Unread'" />
+            <span :class="n.isRead ? 'bg-transparent' : 'bg-primary'" class="mt-1.5 h-2 w-2 shrink-0 rounded-full" :aria-label="n.isRead ? undefined : $t('Unread')" />
             <span class="min-w-0 flex-1">
               <span :class="{ 'font-semibold': !n.isRead }" class="block">{{ n.title }}</span>
               <span class="block text-sm text-stone-600">{{ n.body }}</span>

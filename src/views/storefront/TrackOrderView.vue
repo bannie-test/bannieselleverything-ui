@@ -20,21 +20,21 @@ function submit() {
 
 <template>
   <div class="mx-auto max-w-md">
-    <h1 class="text-2xl font-semibold">Track your order</h1>
-    <p class="mt-1 text-sm text-stone-600">Enter the order number from your confirmation and the email you used at checkout.</p>
+    <h1 class="text-2xl font-semibold">{{ $t('Track your order') }}</h1>
+    <p class="mt-1 text-sm text-stone-600">{{ $t('Enter the order number from your confirmation and the email you used at checkout.') }}</p>
 
-    <p v-if="notFound" class="alert-error mt-4">We couldn't find an order with that number and email.</p>
+    <p v-if="notFound" class="alert-error mt-4">{{ $t("We couldn't find an order with that number and email.") }}</p>
 
     <form class="card mt-6 space-y-4 p-5" @submit.prevent="submit">
       <div>
-        <label for="number" class="label">Order number</label>
+        <label for="number" class="label">{{ $t('Order number') }}</label>
         <input id="number" v-model="number" required placeholder="SO260924-ABCDE" class="input font-mono uppercase" />
       </div>
       <div>
-        <label for="email" class="label">Email</label>
+        <label for="email" class="label">{{ $t('Email') }}</label>
         <input id="email" v-model="email" type="email" required autocomplete="email" class="input" />
       </div>
-      <button type="submit" class="btn btn-primary w-full">Find order</button>
+      <button type="submit" class="btn btn-primary w-full">{{ $t('Find order') }}</button>
     </form>
   </div>
 </template>

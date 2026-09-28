@@ -18,6 +18,6 @@ const styles: Record<OrderStatus, string> = {
 
 <template>
   <span :class="styles[status]" class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset">
-    {{ statusLabels[status] }}
+    {{ $t(statusLabels[status]) }}
   </span>
 </template>

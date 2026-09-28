@@ -25,15 +25,15 @@ onMounted(async () => {
 </script>
 
 <template>
-  <AccountShell title="Wishlist">
-    <p v-if="failed" class="alert-error">We couldn't load your wishlist. Please refresh the page.</p>
+  <AccountShell :title="$t('Wishlist')">
+    <p v-if="failed" class="alert-error">{{ $t("We couldn't load your wishlist. Please refresh the page.") }}</p>
     <div v-else-if="!products" class="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
       <div v-for="i in 3" :key="i" class="aspect-[3/4] animate-pulse rounded-xl bg-stone-200" />
     </div>
     <div v-else-if="visible.length === 0" class="card p-10 text-center">
-      <p class="font-medium">Your wishlist is empty</p>
-      <p class="mt-1 text-sm text-stone-600">Tap the heart on any product to save it for later.</p>
-      <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-4">Browse products</RouterLink>
+      <p class="font-medium">{{ $t('Your wishlist is empty') }}</p>
+      <p class="mt-1 text-sm text-stone-600">{{ $t('Tap the heart on any product to save it for later.') }}</p>
+      <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-4">{{ $t('Browse products') }}</RouterLink>
     </div>
     <div v-else class="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
       <ProductCard v-for="p in visible" :key="p.id" :product="p" />

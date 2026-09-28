@@ -44,15 +44,15 @@ async function remove() {
       <div class="min-w-0">
         <p class="font-mono font-semibold">{{ voucher.code }}</p>
         <p v-if="voucher.applied" class="text-emerald-800">
-          {{ voucher.type === 'FreeShipping' ? 'Free shipping' : `−${money(voucher.discountMinor, store.cart.currency)}` }}<template v-if="voucher.description"> · {{ voucher.description }}</template>
+          {{ voucher.type === 'FreeShipping' ? $t('Free shipping') : `−${money(voucher.discountMinor, store.cart.currency)}` }}<template v-if="voucher.description"> · {{ voucher.description }}</template>
         </p>
         <p v-else class="text-amber-900">{{ voucher.message }}</p>
       </div>
-      <button type="button" class="shrink-0 text-stone-500 hover:text-red-600" :disabled="busy" @click="remove">Remove</button>
+      <button type="button" class="shrink-0 text-stone-500 hover:text-red-600" :disabled="busy" @click="remove">{{ $t('Remove') }}</button>
     </div>
     <form v-else class="flex gap-2" @submit.prevent="apply">
-      <input v-model="code" placeholder="Voucher code" maxlength="40" class="input font-mono uppercase" aria-label="Voucher code" autocomplete="off" />
-      <button type="submit" class="btn btn-secondary shrink-0" :disabled="busy || !code.trim()">{{ busy ? '…' : 'Apply' }}</button>
+      <input v-model="code" :placeholder="$t('Voucher code')" maxlength="40" class="input font-mono uppercase" :aria-label="$t('Voucher code')" autocomplete="off" />
+      <button type="submit" class="btn btn-secondary shrink-0" :disabled="busy || !code.trim()">{{ busy ? '…' : $t('Apply') }}</button>
     </form>
     <p v-if="error" class="field-error">{{ error }}</p>
   </div>

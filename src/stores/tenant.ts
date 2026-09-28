@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { http } from '@/api/client'
 import type { Category, TenantInfo } from '@/api/types'
+import { locale } from '@/i18n'
 import { applyTheme } from '@/utils/theme'
 
 /** The shop this subdomain belongs to. Loaded once at boot; drives branding and navigation. */
@@ -10,6 +11,8 @@ export const useTenantStore = defineStore('tenant', () => {
   const categories = ref<Category[]>([])
   const notFound = ref(false)
   let loading: Promise<void> | null = null
+  // The shop name, theme texts and categories come in the reader's language: load them again after a switch.
+  watch(locale, () => (loading = null))
 
   function apply(tenant: TenantInfo) {
     info.value = tenant

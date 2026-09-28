@@ -35,26 +35,26 @@ async function submit() {
 
 <template>
   <div class="mx-auto max-w-sm py-4">
-    <h1 class="text-2xl font-semibold">Sign in</h1>
+    <h1 class="text-2xl font-semibold">{{ $t('Sign in') }}</h1>
     <p class="mt-1 text-sm text-stone-600">
-      New here?
-      <RouterLink :to="{ name: 'register', query: route.query }" class="link">Create an account</RouterLink>
+      {{ $t('New here?') }}
+      <RouterLink :to="{ name: 'register', query: route.query }" class="link">{{ $t('Create an account') }}</RouterLink>
     </p>
 
     <form class="card mt-6 space-y-4 p-5" @submit.prevent="submit">
       <p v-if="error" class="alert-error">{{ error }}</p>
       <div>
-        <label for="email" class="label">Email</label>
+        <label for="email" class="label">{{ $t('Email') }}</label>
         <input id="email" v-model="email" type="email" required autocomplete="email" class="input" />
       </div>
       <div>
-        <label for="password" class="label">Password</label>
+        <label for="password" class="label">{{ $t('Password') }}</label>
         <input id="password" v-model="password" type="password" required autocomplete="current-password" class="input" />
       </div>
-      <button type="submit" class="btn btn-primary w-full" :disabled="submitting">{{ submitting ? 'Signing in…' : 'Sign in' }}</button>
+      <button type="submit" class="btn btn-primary w-full" :disabled="submitting">{{ submitting ? $t('Signing in…') : $t('Sign in') }}</button>
     </form>
     <p class="mt-4 text-center text-sm text-stone-600">
-      Checked out as a guest? <RouterLink :to="{ name: 'track-order' }" class="link">Track your order</RouterLink>
+      {{ $t('Checked out as a guest?') }} <RouterLink :to="{ name: 'track-order' }" class="link">{{ $t('Track your order') }}</RouterLink>
     </p>
   </div>
 </template>

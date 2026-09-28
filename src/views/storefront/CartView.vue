@@ -34,17 +34,17 @@ async function run(productId: string, action: () => Promise<void>) {
 </script>
 
 <template>
-  <h1 class="text-2xl font-semibold">Your cart</h1>
+  <h1 class="text-2xl font-semibold">{{ $t('Your cart') }}</h1>
 
   <div v-if="!store.loaded" class="mt-6 h-40 animate-pulse rounded-xl bg-stone-200" />
 
   <template v-else-if="cart.items.length === 0">
     <div class="card mt-6 p-10 text-center">
-      <p class="font-medium">Your cart is empty</p>
-      <p class="mt-1 text-sm text-stone-600">Find something you like and add it here.</p>
-      <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-5">Start shopping</RouterLink>
+      <p class="font-medium">{{ $t('Your cart is empty') }}</p>
+      <p class="mt-1 text-sm text-stone-600">{{ $t('Find something you like and add it here.') }}</p>
+      <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-5">{{ $t('Start shopping') }}</RouterLink>
     </div>
-    <SuggestedProducts :product-ids="[]" title="Popular right now" />
+    <SuggestedProducts :product-ids="[]" :title="$t('Popular right now')" />
   </template>
 
   <template v-else>
@@ -65,11 +65,11 @@ async function run(productId: string, action: () => Promise<void>) {
                 </div>
               </div>
               <p class="text-sm text-stone-500">
-                {{ money(item.unitPriceMinor - item.discountMinor / item.quantity, cart.currency) }} each
+                {{ $t('{amount} each', { amount: money(item.unitPriceMinor - item.discountMinor / item.quantity, cart.currency) }) }}
                 <span v-if="item.discountName" class="ml-1 rounded bg-accent px-1.5 py-0.5 text-xs font-semibold text-on-accent">{{ item.discountName }}</span>
               </p>
               <p v-if="!item.available" class="text-sm font-medium text-red-600">
-                {{ item.stockQuantity === 0 ? 'Out of stock — please remove it.' : `Only ${item.stockQuantity} left — lower the quantity.` }}
+                {{ item.stockQuantity === 0 ? $t('Out of stock — please remove it.') : $t('Only {n} left — lower the quantity.', { n: item.stockQuantity }) }}
               </p>
               <div class="mt-auto flex items-center justify-between gap-3">
                 <QuantityStepper
@@ -79,7 +79,7 @@ async function run(productId: string, action: () => Promise<void>) {
                   @update:model-value="(q) => run(item.productId, () => store.setQuantity(item.productId, q))"
                 />
                 <button class="text-sm text-stone-500 hover:text-red-600" :disabled="busy !== null" @click="run(item.productId, () => store.remove(item.productId))">
-                  Remove
+                  {{ $t('Remove') }}
                 </button>
               </div>
             </div>
@@ -88,12 +88,12 @@ async function run(productId: string, action: () => Promise<void>) {
       </div>
 
       <aside class="card h-fit space-y-5 p-5 lg:sticky lg:top-32">
-        <h2 class="font-semibold">Order summary</h2>
+        <h2 class="font-semibold">{{ $t('Order summary') }}</h2>
         <VoucherBox />
         <CartTotals :cart="cart" />
         <p v-if="!customer.isSignedIn" class="rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-600">
-          Members get a standing discount on every order.
-          <RouterLink :to="{ name: 'login', query: { redirect: '/cart' } }" class="link">Sign in</RouterLink> to see your price.
+          {{ $t('Members get a standing discount on every order.') }}
+          <RouterLink :to="{ name: 'login', query: { redirect: '/cart' } }" class="link">{{ $t('Sign in') }}</RouterLink> {{ $t('to see your price.') }}
         </p>
         <div>
           <RouterLink
@@ -102,15 +102,15 @@ async function run(productId: string, action: () => Promise<void>) {
             :aria-disabled="hasUnavailable || voucherBlocked"
             class="btn btn-primary btn-lg w-full"
           >
-            Checkout
+            {{ $t('Checkout') }}
           </RouterLink>
-          <p v-if="hasUnavailable" class="mt-2 text-xs text-red-600">Fix the items marked above to continue.</p>
-          <p v-else-if="voucherBlocked" class="mt-2 text-xs text-red-600">Remove the voucher that can't be used to continue.</p>
-          <RouterLink :to="{ name: 'catalog' }" class="mt-3 block text-center text-sm text-stone-600 hover:text-primary">Continue shopping</RouterLink>
+          <p v-if="hasUnavailable" class="mt-2 text-xs text-red-600">{{ $t('Fix the items marked above to continue.') }}</p>
+          <p v-else-if="voucherBlocked" class="mt-2 text-xs text-red-600">{{ $t("Remove the voucher that can't be used to continue.") }}</p>
+          <RouterLink :to="{ name: 'catalog' }" class="mt-3 block text-center text-sm text-stone-600 hover:text-primary">{{ $t('Continue shopping') }}</RouterLink>
         </div>
       </aside>
     </div>
 
-    <SuggestedProducts :product-ids="productIds" title="Customers also bought" />
+    <SuggestedProducts :product-ids="productIds" :title="$t('Customers also bought')" />
   </template>
 </template>

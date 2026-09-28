@@ -12,28 +12,28 @@ defineProps<{ order: Order; bankTransfer?: BankTransferInfo | null }>()
   <div class="space-y-4">
     <div class="card flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
       <div>
-        <p class="text-sm text-stone-500">Order</p>
+        <p class="text-sm text-stone-500">{{ $t('Order') }}</p>
         <p class="font-mono text-lg font-semibold">{{ order.orderNumber }}</p>
       </div>
       <div class="text-right">
         <StatusBadge :status="order.status" />
-        <p class="mt-1 text-xs text-stone-500">Placed {{ formatDateTime(order.placedAt) }}</p>
+        <p class="mt-1 text-xs text-stone-500">{{ $t('Placed {date}', { date: formatDateTime(order.placedAt) }) }}</p>
       </div>
     </div>
 
     <div v-if="order.status === 'AwaitingPayment' && bankTransfer" class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 sm:p-5">
-      <h3 class="font-semibold">Complete your bank transfer</h3>
-      <p class="mt-1">We'll start preparing your order as soon as the payment arrives.</p>
+      <h3 class="font-semibold">{{ $t('Complete your bank transfer') }}</h3>
+      <p class="mt-1">{{ $t("We'll start preparing your order as soon as the payment arrives.") }}</p>
       <dl class="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-[auto_1fr]">
-        <dt class="text-amber-800">Bank</dt>
+        <dt class="text-amber-800">{{ $t('Bank') }}</dt>
         <dd class="font-medium">{{ bankTransfer.bankName }}</dd>
-        <dt class="text-amber-800">Account number</dt>
+        <dt class="text-amber-800">{{ $t('Account number') }}</dt>
         <dd class="font-mono font-medium select-all">{{ bankTransfer.accountNumber }}</dd>
-        <dt class="text-amber-800">Account name</dt>
+        <dt class="text-amber-800">{{ $t('Account name') }}</dt>
         <dd class="font-medium">{{ bankTransfer.accountName }}</dd>
-        <dt class="text-amber-800">Amount</dt>
+        <dt class="text-amber-800">{{ $t('Amount') }}</dt>
         <dd class="font-medium">{{ money(order.totalMinor, order.currency) }}</dd>
-        <dt class="text-amber-800">Transfer note</dt>
+        <dt class="text-amber-800">{{ $t('Transfer note') }}</dt>
         <dd class="font-mono font-medium select-all">{{ order.orderNumber }}</dd>
       </dl>
     </div>
@@ -45,7 +45,7 @@ defineProps<{ order: Order; bankTransfer?: BankTransferInfo | null }>()
         <div>
           <p class="font-medium">{{ item.productName }}</p>
           <p class="text-sm text-stone-500">{{ item.quantity }} × {{ money(item.unitPriceMinor, order.currency) }}</p>
-          <p v-if="item.discountMinor" class="text-xs text-red-600">Sale −{{ money(item.discountMinor, order.currency) }}</p>
+          <p v-if="item.discountMinor" class="text-xs text-red-600">{{ $t('Sale') }} −{{ money(item.discountMinor, order.currency) }}</p>
         </div>
         <div class="text-right whitespace-nowrap">
           <p class="font-medium">{{ money(item.lineTotalMinor - item.discountMinor, order.currency) }}</p>
@@ -54,27 +54,27 @@ defineProps<{ order: Order; bankTransfer?: BankTransferInfo | null }>()
       </div>
       <dl class="space-y-1 p-4 text-sm">
         <div class="flex justify-between">
-          <dt class="text-stone-600">Subtotal</dt>
+          <dt class="text-stone-600">{{ $t('Subtotal') }}</dt>
           <dd>{{ money(order.subtotalMinor, order.currency) }}</dd>
         </div>
         <div v-if="order.productDiscountMinor" class="flex justify-between text-red-600">
-          <dt>Sale discounts</dt>
+          <dt>{{ $t('Sale discounts') }}</dt>
           <dd>−{{ money(order.productDiscountMinor, order.currency) }}</dd>
         </div>
         <div v-if="order.membershipDiscountMinor" class="flex justify-between text-red-600">
-          <dt>{{ order.membershipTierName }} member discount</dt>
+          <dt>{{ $t('{tier} member discount', { tier: order.membershipTierName ?? '' }) }}</dt>
           <dd>−{{ money(order.membershipDiscountMinor, order.currency) }}</dd>
         </div>
         <div v-if="order.voucherDiscountMinor" class="flex justify-between text-red-600">
-          <dt>Voucher <span class="font-mono">{{ order.voucherCode }}</span></dt>
+          <dt>{{ $t('Voucher') }} <span class="font-mono">{{ order.voucherCode }}</span></dt>
           <dd>−{{ money(order.voucherDiscountMinor, order.currency) }}</dd>
         </div>
         <div class="flex justify-between">
-          <dt class="text-stone-600">Shipping</dt>
-          <dd>{{ order.shippingMinor ? money(order.shippingMinor, order.currency) : 'Free' }}</dd>
+          <dt class="text-stone-600">{{ $t('Shipping') }}</dt>
+          <dd>{{ order.shippingMinor ? money(order.shippingMinor, order.currency) : $t('Free') }}</dd>
         </div>
         <div class="flex justify-between pt-2 text-base font-semibold">
-          <dt>Total</dt>
+          <dt>{{ $t('Total') }}</dt>
           <dd>{{ money(order.totalMinor, order.currency) }}</dd>
         </div>
       </dl>
@@ -82,7 +82,7 @@ defineProps<{ order: Order; bankTransfer?: BankTransferInfo | null }>()
 
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="card p-4 text-sm">
-        <h3 class="mb-2 font-semibold">Shipping to</h3>
+        <h3 class="mb-2 font-semibold">{{ $t('Shipping to') }}</h3>
         <p>{{ order.shippingAddress.recipientName }} · {{ order.shippingAddress.phone }}</p>
         <p class="text-stone-600">
           {{ order.shippingAddress.streetAddress }}, {{ order.shippingAddress.ward }}, {{ order.shippingAddress.district }},
@@ -90,13 +90,13 @@ defineProps<{ order: Order; bankTransfer?: BankTransferInfo | null }>()
         </p>
       </div>
       <div class="card p-4 text-sm">
-        <h3 class="mb-2 font-semibold">Payment & contact</h3>
+        <h3 class="mb-2 font-semibold">{{ $t('Payment & contact') }}</h3>
         <p>
-          {{ paymentMethodLabels[order.paymentMethod] }}
-          <span v-if="order.paidAt" class="text-emerald-700"> · Paid {{ formatDateTime(order.paidAt) }}</span>
+          {{ $t(paymentMethodLabels[order.paymentMethod]) }}
+          <span v-if="order.paidAt" class="text-emerald-700"> · {{ $t('Paid {date}', { date: formatDateTime(order.paidAt) }) }}</span>
         </p>
         <p class="text-stone-600">{{ order.customerEmail }}</p>
-        <p v-if="order.notes" class="mt-2 text-stone-600"><span class="font-medium text-stone-800">Note:</span> {{ order.notes }}</p>
+        <p v-if="order.notes" class="mt-2 text-stone-600"><span class="font-medium text-stone-800">{{ $t('Note:') }}</span> {{ order.notes }}</p>
       </div>
     </div>
   </div>

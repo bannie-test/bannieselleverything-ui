@@ -5,9 +5,13 @@ import { router } from './router'
 import { onUnauthorized } from './api/client'
 import { useAdminStore } from './stores/admin'
 import { useCustomerStore } from './stores/customer'
+import { t } from './i18n'
+// Applies the last-used color mode before the first paint.
+import './utils/theme'
 import './style.css'
 
 const app = createApp(App).use(createPinia()).use(router)
+app.config.globalProperties.$t = t
 
 // An expired or revoked token signs that realm out and sends the user to its login page.
 onUnauthorized((isAdmin) => {

@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { errorMessage, http } from '@/api/client'
+import { t } from '@/i18n'
 import type { Review, ReviewPage } from '@/api/types'
 import { useCustomerStore } from '@/stores/customer'
 import { formatDate } from '@/utils/format'
@@ -70,7 +71,7 @@ function startEditing() {
 
 async function save() {
   if (!form.rating) {
-    formError.value = 'Choose a star rating.'
+    formError.value = t('Choose a star rating.')
     return
   }
   saving.value = true
@@ -89,7 +90,7 @@ async function save() {
 }
 
 async function remove() {
-  if (!confirm('Delete your review?')) return
+  if (!confirm(t('Delete your review?'))) return
   saving.value = true
   try {
     await http.delete(`${url.value}/mine`)
@@ -107,8 +108,8 @@ async function remove() {
 
 <template>
   <section id="reviews" class="mt-12 scroll-mt-32">
-    <h2 class="text-xl font-semibold">Customer reviews</h2>
-    <p v-if="failed" class="alert-error mt-4">We couldn't load reviews. Please refresh the page.</p>
+    <h2 class="text-xl font-semibold">{{ $t('Customer reviews') }}</h2>
+    <p v-if="failed" class="alert-error mt-4">{{ $t("We couldn't load reviews. Please refresh the page.") }}</p>
 
     <div v-else-if="data" class="mt-4 grid gap-8 lg:grid-cols-[18rem_1fr]">
       <div>
@@ -116,12 +117,12 @@ async function remove() {
           <span class="text-4xl font-semibold">{{ data.summary.ratingAverage?.toFixed(1) ?? '–' }}</span>
           <div>
             <StarRating :rating="data.summary.ratingAverage" size="md" />
-            <p class="text-sm text-stone-500">{{ data.summary.reviewCount }} review{{ data.summary.reviewCount === 1 ? '' : 's' }}</p>
+            <p class="text-sm text-stone-500">{{ data.summary.reviewCount === 1 ? $t('1 review') : $t('{n} reviews', { n: data.summary.reviewCount }) }}</p>
           </div>
         </div>
         <ul class="mt-4 space-y-1.5 text-sm">
           <li v-for="star in [5, 4, 3, 2, 1]" :key="star" class="flex items-center gap-2">
-            <span class="w-10 text-stone-600">{{ star }} star</span>
+            <span class="w-12 text-stone-600">{{ $t('{n} star', { n: star }) }}</span>
             <span class="h-2 flex-1 overflow-hidden rounded-full bg-stone-200">
               <span class="block h-full rounded-full bg-amber-400" :style="{ width: `${(data.summary.distribution[star - 1]! / maxBar) * 100}%` }" />
             </span>
@@ -131,39 +132,39 @@ async function remove() {
 
         <div class="mt-6">
           <template v-if="!customer.isSignedIn">
-            <p class="text-sm text-stone-600">Bought this product?</p>
+            <p class="text-sm text-stone-600">{{ $t('Bought this product?') }}</p>
             <RouterLink :to="{ name: 'login', query: { redirect: `${route.fullPath}#reviews` } }" class="btn btn-secondary mt-2 w-full">
-              Sign in to write a review
+              {{ $t('Sign in to write a review') }}
             </RouterLink>
           </template>
           <button v-else-if="!editing" class="btn btn-secondary w-full" @click="startEditing">
-            {{ mine ? 'Edit your review' : 'Write a review' }}
+            {{ mine ? $t('Edit your review') : $t('Write a review') }}
           </button>
         </div>
       </div>
 
       <div>
         <form v-if="editing" class="card mb-6 space-y-4 p-5" @submit.prevent="save">
-          <h3 class="font-semibold">{{ mine ? 'Edit your review' : 'Write a review' }}</h3>
+          <h3 class="font-semibold">{{ mine ? $t('Edit your review') : $t('Write a review') }}</h3>
           <StarInput v-model="form.rating" />
           <div>
-            <label for="review-title" class="label">Headline (optional)</label>
-            <input id="review-title" v-model="form.title" maxlength="200" class="input" placeholder="Sum it up in a few words" />
+            <label for="review-title" class="label">{{ $t('Headline (optional)') }}</label>
+            <input id="review-title" v-model="form.title" maxlength="200" class="input" :placeholder="$t('Sum it up in a few words')" />
           </div>
           <div>
-            <label for="review-body" class="label">Review (optional)</label>
-            <textarea id="review-body" v-model="form.body" rows="4" maxlength="4000" class="input" placeholder="What did you like or dislike?" />
+            <label for="review-body" class="label">{{ $t('Review (optional)') }}</label>
+            <textarea id="review-body" v-model="form.body" rows="4" maxlength="4000" class="input" :placeholder="$t('What did you like or dislike?')" />
           </div>
           <p v-if="formError" class="alert-error">{{ formError }}</p>
           <div class="flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? 'Saving…' : 'Submit review' }}</button>
-            <button type="button" class="btn btn-secondary" :disabled="saving" @click="editing = false">Cancel</button>
-            <button v-if="mine" type="button" class="btn btn-danger ml-auto" :disabled="saving" @click="remove">Delete</button>
+            <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? $t('Saving…') : $t('Submit review') }}</button>
+            <button type="button" class="btn btn-secondary" :disabled="saving" @click="editing = false">{{ $t('Cancel') }}</button>
+            <button v-if="mine" type="button" class="btn btn-danger ml-auto" :disabled="saving" @click="remove">{{ $t('Delete') }}</button>
           </div>
         </form>
 
         <p v-if="data.reviews.items.length === 0 && !editing" class="card p-8 text-center text-stone-600">
-          No reviews yet. Be the first to share your thoughts.
+          {{ $t('No reviews yet. Be the first to share your thoughts.') }}
         </p>
         <ul v-else class="divide-y divide-stone-100">
           <li v-for="r in data.reviews.items" :key="r.id" class="py-4 first:pt-0">
@@ -172,8 +173,8 @@ async function remove() {
               <p v-if="r.title" class="font-medium">{{ r.title }}</p>
             </div>
             <p class="mt-1 text-xs text-stone-500">
-              {{ r.authorName }}<span v-if="r.isMine"> (you)</span> · {{ formatDate(r.createdAt) }}
-              <span v-if="r.isVerifiedPurchase" class="ml-1 font-medium text-emerald-700">✓ Verified purchase</span>
+              {{ r.authorName }}<span v-if="r.isMine"> ({{ $t('you') }})</span> · {{ formatDate(r.createdAt) }}
+              <span v-if="r.isVerifiedPurchase" class="ml-1 font-medium text-emerald-700">✓ {{ $t('Verified purchase') }}</span>
             </p>
             <p v-if="r.body" class="mt-2 text-sm leading-relaxed whitespace-pre-line text-stone-700">{{ r.body }}</p>
           </li>

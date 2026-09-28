@@ -5,6 +5,7 @@ import { errorMessage, http } from '@/api/client'
 import type { AdminReview, Paged } from '@/api/types'
 import PaginationBar from '@/components/PaginationBar.vue'
 import StarRating from '@/components/StarRating.vue'
+import { t } from '@/i18n'
 import { formatDate } from '@/utils/format'
 
 const route = useRoute()
@@ -35,7 +36,7 @@ async function load() {
 watch(() => route.query, load, { immediate: true })
 
 async function remove(r: AdminReview) {
-  if (!confirm(`Remove this review by ${r.authorName}? The product's rating will be recalculated.`)) return
+  if (!confirm(t("Remove this review by {name}? The product's rating will be recalculated.", { name: r.authorName }))) return
   error.value = null
   try {
     await http.delete(`/admin/reviews/${r.id}`)
@@ -47,30 +48,30 @@ async function remove(r: AdminReview) {
 </script>
 
 <template>
-  <h1 class="text-2xl font-semibold">Reviews</h1>
-  <p class="mt-1 text-sm text-stone-600">Remove reviews that are abusive, spam or not about the product.</p>
+  <h1 class="text-2xl font-semibold">{{ $t('Reviews') }}</h1>
+  <p class="mt-1 text-sm text-stone-600">{{ $t('Remove reviews that are abusive, spam or not about the product.') }}</p>
 
   <div class="mt-4 flex flex-wrap items-center gap-3">
     <div class="flex flex-wrap gap-1 rounded-lg bg-stone-100 p-1 text-sm">
       <button
         v-for="r in [undefined, 5, 4, 3, 2, 1]"
         :key="r ?? 'all'"
-        :class="String(route.query.rating ?? '') === String(r ?? '') ? 'bg-white font-medium shadow-sm' : 'text-stone-600 hover:text-stone-900'"
+        :class="String(route.query.rating ?? '') === String(r ?? '') ? 'bg-surface font-medium shadow-sm' : 'text-stone-600 hover:text-stone-900'"
         class="rounded-md px-3 py-1.5"
         @click="update({ rating: r, page: undefined })"
       >
-        {{ r ? `${r}★` : 'All' }}
+        {{ r ? `${r}★` : $t('All') }}
       </button>
     </div>
     <form class="ml-auto" @submit.prevent="update({ q: search.trim(), page: undefined })">
-      <input v-model="search" type="search" placeholder="Product or review text" class="input w-64" aria-label="Search reviews" />
+      <input v-model="search" type="search" :placeholder="$t('Product or review text')" class="input w-64" :aria-label="$t('Search reviews')" />
     </form>
   </div>
 
   <p v-if="error" class="alert-error mt-4">{{ error }}</p>
-  <p v-if="failed" class="alert-error mt-6">Couldn't load reviews.</p>
+  <p v-if="failed" class="alert-error mt-6">{{ $t("Couldn't load reviews.") }}</p>
   <div v-else-if="!result" class="mt-6 h-64 animate-pulse rounded-xl bg-stone-200" />
-  <div v-else-if="result.items.length === 0" class="card mt-6 p-10 text-center text-stone-600">No reviews match.</div>
+  <div v-else-if="result.items.length === 0" class="card mt-6 p-10 text-center text-stone-600">{{ $t('No reviews match.') }}</div>
 
   <template v-else>
     <ul class="card mt-6 divide-y divide-stone-100">
@@ -86,10 +87,10 @@ async function remove(r: AdminReview) {
           <p v-if="r.body" class="mt-1 text-sm whitespace-pre-line text-stone-700">{{ r.body }}</p>
           <p class="mt-1 text-xs text-stone-500">
             {{ r.authorName }} · {{ formatDate(r.createdAt) }}
-            <span v-if="r.isVerifiedPurchase" class="text-emerald-700"> · Verified purchase</span>
+            <span v-if="r.isVerifiedPurchase" class="text-emerald-700"> · {{ $t('Verified purchase') }}</span>
           </p>
         </div>
-        <button class="btn btn-danger" @click="remove(r)">Remove</button>
+        <button class="btn btn-danger" @click="remove(r)">{{ $t('Remove') }}</button>
       </li>
     </ul>
     <PaginationBar class="mt-6" :page="result.page" :total-pages="result.totalPages" @change="(p) => update({ page: p })" />

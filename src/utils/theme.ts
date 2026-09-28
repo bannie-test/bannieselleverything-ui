@@ -1,4 +1,5 @@
-import type { CornerStyle, FontFamily } from '@/api/types'
+import type { ColorMode, CornerStyle, FontFamily } from '@/api/types'
+import { storage } from '@/utils/storage'
 
 interface FontOption {
   label: string
@@ -49,6 +50,7 @@ export interface ThemeInput {
   accentColor: string
   fontFamily: FontFamily
   cornerStyle: CornerStyle
+  colorMode?: ColorMode
 }
 
 /** CSS custom properties for a theme; bind to `style` to theme a subtree. */
@@ -80,9 +82,39 @@ export function loadFont(family: FontFamily) {
   document.head.appendChild(link)
 }
 
+const darkQuery = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null
+const COLOR_MODE_KEY = 'color-mode'
+/** Last mode this shop used, so a dark shop doesn't flash light while its settings load. */
+let pageColorMode = (storage.get(COLOR_MODE_KEY) as ColorMode | null) ?? 'light'
+
+/** Whether `mode` means dark right now; 'system' asks the OS. */
+export function isDark(mode: ColorMode | undefined): boolean {
+  return mode === 'dark' || (mode === 'system' && !!darkQuery?.matches)
+}
+
+/** Class that puts a subtree in the given color mode (see style.css). */
+export function colorModeClass(mode: ColorMode | undefined): 'theme-dark' | 'theme-light' {
+  return isDark(mode) ? 'theme-dark' : 'theme-light'
+}
+
+function applyColorMode() {
+  document.documentElement.classList.toggle('theme-dark', isDark(pageColorMode))
+}
+// A shop set to 'system' follows the OS switching between light and dark while the page is open.
+darkQuery?.addEventListener('change', applyColorMode)
+applyColorMode()
+
+/** Axis and gridline colors for Chart.js, which draws on a canvas and can't follow the CSS palette. */
+export function chartColors(): { grid: string; tick: string } {
+  return document.documentElement.classList.contains('theme-dark') ? { grid: '#44403c', tick: '#a8a29e' } : { grid: '#e7e5e4', tick: '#78716c' }
+}
+
 /** Themes the whole page. */
 export function applyTheme(t: ThemeInput) {
   loadFont(t.fontFamily)
   const root = document.documentElement.style
   for (const [key, value] of Object.entries(themeVars(t))) root.setProperty(key, value)
+  pageColorMode = t.colorMode ?? 'light'
+  storage.set(COLOR_MODE_KEY, pageColorMode)
+  applyColorMode()
 }

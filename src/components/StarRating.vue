@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { t } from '@/i18n'
 
 const props = withDefaults(defineProps<{ rating: number | null; count?: number | null; size?: 'sm' | 'md' | 'lg' }>(), {
   count: null,
@@ -9,7 +10,7 @@ const props = withDefaults(defineProps<{ rating: number | null; count?: number |
 /** Fill fraction (0–1) of each of the five stars, so 3.5 shows three and a half. */
 const fills = computed(() => [0, 1, 2, 3, 4].map((i) => Math.min(1, Math.max(0, (props.rating ?? 0) - i))))
 const sizeClass = computed(() => ({ sm: 'h-3.5 w-3.5', md: 'h-4 w-4', lg: 'h-5 w-5' })[props.size])
-const label = computed(() => (props.rating == null ? 'No ratings yet' : `Rated ${props.rating.toFixed(1)} out of 5`))
+const label = computed(() => (props.rating == null ? t('No ratings yet') : t('Rated {rating} out of 5', { rating: props.rating.toFixed(1) })))
 </script>
 
 <template>

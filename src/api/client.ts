@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios'
+import { locale, t } from '@/i18n'
 import { storage } from '@/utils/storage'
 
 // Same-origin: the dev server (and the Worker in production) proxies /api to the backend,
@@ -17,6 +18,7 @@ http.interceptors.request.use((config) => {
   const isAdmin = config.url?.startsWith('/admin') ?? false
   const token = storage.get(isAdmin ? ADMIN_TOKEN_KEY : CUSTOMER_TOKEN_KEY)
   if (token) config.headers.Authorization = `Bearer ${token}`
+  config.headers['Accept-Language'] = locale.value
 
   const cartToken = storage.get(CART_TOKEN_KEY)
   if (!isAdmin && cartToken) config.headers['X-Cart-Token'] = cartToken
@@ -45,7 +47,7 @@ interface ProblemDetails {
 }
 
 /** A human-readable message from an API error (ProblemDetails) or a network failure. */
-export function errorMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
+export function errorMessage(error: unknown, fallback = t('Something went wrong. Please try again.')): string {
   if (error instanceof AxiosError) {
     const problem = error.response?.data as ProblemDetails | string | undefined
     if (typeof problem === 'string' && problem) return problem
@@ -57,7 +59,7 @@ export function errorMessage(error: unknown, fallback = 'Something went wrong. P
       if (problem.detail) return problem.detail
       if (problem.title && error.response?.status !== 500) return problem.title
     }
-    if (!error.response) return 'Cannot reach the server. Check your connection.'
+    if (!error.response) return t('Cannot reach the server. Check your connection.')
   }
   return fallback
 }

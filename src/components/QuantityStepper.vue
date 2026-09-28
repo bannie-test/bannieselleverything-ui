@@ -8,12 +8,12 @@ function set(value: number) {
 </script>
 
 <template>
-  <div class="inline-flex items-center rounded-lg border border-stone-300 bg-white">
+  <div class="inline-flex items-center rounded-lg border border-stone-300 bg-surface">
     <button
       type="button"
       class="h-9 w-9 text-lg text-stone-600 hover:bg-stone-100 disabled:opacity-40"
       :disabled="disabled || quantity <= 1"
-      aria-label="Decrease quantity"
+      :aria-label="$t('Decrease quantity')"
       @click="set(quantity - 1)"
     >
       −
@@ -25,7 +25,7 @@ function set(value: number) {
       min="1"
       :max="max"
       :disabled="disabled"
-      aria-label="Quantity"
+      :aria-label="$t('Quantity')"
       class="h-9 w-12 border-x border-stone-300 text-center text-sm [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none"
       @change="set(Number(($event.target as HTMLInputElement).value))"
     />
@@ -33,7 +33,7 @@ function set(value: number) {
       type="button"
       class="h-9 w-9 text-lg text-stone-600 hover:bg-stone-100 disabled:opacity-40"
       :disabled="disabled || quantity >= max"
-      aria-label="Increase quantity"
+      :aria-label="$t('Increase quantity')"
       @click="set(quantity + 1)"
     >
       +

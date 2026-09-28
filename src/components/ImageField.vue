@@ -30,15 +30,15 @@ async function onFile(event: Event) {
           :value="model ?? ''"
           :class="{ 'input-error': error }"
           class="input font-mono text-xs"
-          placeholder="https://… or upload"
+          :placeholder="$t('https://… or upload')"
           @input="model = ($event.target as HTMLInputElement).value.trim() || null"
         />
         <div class="flex items-center gap-2">
           <label class="btn btn-secondary btn-sm cursor-pointer" :class="{ 'pointer-events-none opacity-50': uploading }">
-            {{ uploading ? 'Uploading…' : 'Upload image' }}
+            {{ uploading ? $t('Uploading…') : $t('Upload image') }}
             <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="sr-only" @change="onFile" />
           </label>
-          <button v-if="model" type="button" class="text-xs text-stone-500 hover:text-red-600" @click="model = null">Remove</button>
+          <button v-if="model" type="button" class="text-xs text-stone-500 hover:text-red-600" @click="model = null">{{ $t('Remove') }}</button>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { errorMessage, http } from '@/api/client'
+import { t } from '@/i18n'
 import type { ProductDetail } from '@/api/types'
 import PriceTag from '@/components/PriceTag.vue'
 import ProductReviews from '@/components/ProductReviews.vue'
@@ -29,9 +30,9 @@ const maxAddable = computed(() => Math.max(0, Math.min(99, (product.value?.stock
 const availability = computed(() => {
   const p = product.value
   if (!p) return null
-  if (p.stockQuantity === 0) return { text: 'Out of stock', class: 'text-red-600', dot: 'bg-red-500' }
-  if (p.stockQuantity <= p.lowStockThreshold) return { text: `Only ${p.stockQuantity} left — order soon`, class: 'text-amber-700', dot: 'bg-amber-500' }
-  return { text: 'In stock', class: 'text-emerald-700', dot: 'bg-emerald-500' }
+  if (p.stockQuantity === 0) return { text: t('Out of stock'), class: 'text-red-600', dot: 'bg-red-500' }
+  if (p.stockQuantity <= p.lowStockThreshold) return { text: t('Only {n} left — order soon', { n: p.stockQuantity }), class: 'text-amber-700', dot: 'bg-amber-500' }
+  return { text: t('In stock'), class: 'text-emerald-700', dot: 'bg-emerald-500' }
 })
 
 /** Attributes plus the fixed facts shoppers expect in a spec table. */
@@ -39,7 +40,7 @@ const specs = computed(() => {
   const p = product.value
   if (!p) return []
   const rows = Object.entries(p.attributes).map(([name, value]) => ({ name, value, mono: false }))
-  if (p.category) rows.push({ name: 'Category', value: p.parentCategory ? `${p.parentCategory.name} › ${p.category.name}` : p.category.name, mono: false })
+  if (p.category) rows.push({ name: t('Category'), value: p.parentCategory ? `${p.parentCategory.name} › ${p.category.name}` : p.category.name, mono: false })
   if (p.sku) rows.push({ name: 'SKU', value: p.sku, mono: true })
   return rows
 })
@@ -78,7 +79,7 @@ async function addToCart() {
   message.value = null
   try {
     await cart.add(product.value.id, quantity.value)
-    message.value = { type: 'success', text: `Added ${quantity.value} to your cart.` }
+    message.value = { type: 'success', text: t('Added {n} to your cart.', { n: quantity.value }) }
     quantity.value = 1
   } catch (error) {
     message.value = { type: 'error', text: errorMessage(error) }
@@ -90,12 +91,12 @@ async function addToCart() {
 
 <template>
   <div v-if="notFound" class="py-16 text-center">
-    <h1 class="text-2xl font-semibold">Product not found</h1>
-    <p class="mt-2 text-stone-600">It may have been removed or is no longer available.</p>
-    <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-6">Browse products</RouterLink>
+    <h1 class="text-2xl font-semibold">{{ $t('Product not found') }}</h1>
+    <p class="mt-2 text-stone-600">{{ $t('It may have been removed or is no longer available.') }}</p>
+    <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-6">{{ $t('Browse products') }}</RouterLink>
   </div>
 
-  <p v-else-if="loadError" class="alert-error">We couldn't load this product. Please refresh the page.</p>
+  <p v-else-if="loadError" class="alert-error">{{ $t("We couldn't load this product. Please refresh the page.") }}</p>
 
   <div v-else-if="!product" class="grid gap-8 md:grid-cols-2">
     <div class="aspect-square animate-pulse rounded-2xl bg-stone-200" />
@@ -107,8 +108,8 @@ async function addToCart() {
   </div>
 
   <div v-else>
-    <nav class="mb-4 text-sm text-stone-500" aria-label="Breadcrumb">
-      <RouterLink :to="{ name: 'catalog' }" class="hover:text-primary">Products</RouterLink>
+    <nav class="mb-4 text-sm text-stone-500" :aria-label="$t('Breadcrumb')">
+      <RouterLink :to="{ name: 'catalog' }" class="hover:text-primary">{{ $t('Products') }}</RouterLink>
       <template v-if="product.parentCategory">
         <span class="mx-1.5">/</span>
         <RouterLink :to="{ name: 'catalog', query: { category: product.parentCategory.slug } }" class="hover:text-primary">{{ product.parentCategory.name }}</RouterLink>
@@ -126,17 +127,17 @@ async function addToCart() {
           class="group relative aspect-square overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 outline-none focus-visible:ring-2 focus-visible:ring-primary"
           tabindex="0"
           aria-roledescription="carousel"
-          :aria-label="`${product.name} images`"
+          :aria-label="$t('{name} images', { name: product.name })"
           @keydown.left.prevent="showImage(-1)"
           @keydown.right.prevent="showImage(1)"
         >
-          <img v-if="product.images.length" :src="product.images[activeImage]" :alt="`${product.name}, image ${activeImage + 1} of ${product.images.length}`" class="h-full w-full object-cover" />
+          <img v-if="product.images.length" :src="product.images[activeImage]" :alt="$t('{name}, image {n} of {total}', { name: product.name, n: activeImage + 1, total: product.images.length })" class="h-full w-full object-cover" />
           <template v-if="product.images.length > 1">
-            <button class="absolute top-1/2 left-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow transition hover:bg-white sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100" aria-label="Previous image" @click="showImage(-1)">‹</button>
-            <button class="absolute top-1/2 right-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow transition hover:bg-white sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100" aria-label="Next image" @click="showImage(1)">›</button>
-            <span class="absolute right-3 bottom-3 rounded-full bg-stone-900/70 px-2 py-0.5 text-xs text-white">{{ activeImage + 1 }} / {{ product.images.length }}</span>
+            <button class="absolute top-1/2 left-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 shadow transition hover:bg-surface sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100" :aria-label="$t('Previous image')" @click="showImage(-1)">‹</button>
+            <button class="absolute top-1/2 right-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 shadow transition hover:bg-surface sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100" :aria-label="$t('Next image')" @click="showImage(1)">›</button>
+            <span class="theme-light absolute right-3 bottom-3 rounded-full bg-stone-900/70 px-2 py-0.5 text-xs text-white">{{ activeImage + 1 }} / {{ product.images.length }}</span>
           </template>
-          <span v-if="product.discountedPriceMinor !== null" class="absolute top-3 left-3 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">Sale</span>
+          <span v-if="product.discountedPriceMinor !== null" class="absolute top-3 left-3 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">{{ $t('Sale') }}</span>
         </div>
         <div v-if="product.images.length > 1" class="mt-3 flex gap-2 overflow-x-auto pb-1">
           <button
@@ -144,7 +145,7 @@ async function addToCart() {
             :key="img"
             :class="i === activeImage ? 'ring-2 ring-primary' : 'opacity-70 hover:opacity-100'"
             class="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-stone-200"
-            :aria-label="`Show image ${i + 1}`"
+            :aria-label="$t('Show image {n}', { n: i + 1 })"
             :aria-current="i === activeImage"
             @click="activeImage = i"
           >
@@ -159,7 +160,7 @@ async function addToCart() {
         <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">{{ product.name }}</h1>
         <a href="#reviews" class="mt-2 inline-flex items-center gap-2 text-sm text-stone-600 hover:text-primary">
           <StarRating :rating="product.ratingAverage" size="md" />
-          <span>{{ product.reviewCount ? `${product.ratingAverage?.toFixed(1)} · ${product.reviewCount} review${product.reviewCount === 1 ? '' : 's'}` : 'No reviews yet' }}</span>
+          <span>{{ product.reviewCount ? `${product.ratingAverage?.toFixed(1)} · ${product.reviewCount === 1 ? $t('1 review') : $t('{n} reviews', { n: product.reviewCount })}` : $t('No reviews yet') }}</span>
         </a>
         <PriceTag
           class="mt-3"
@@ -180,24 +181,24 @@ async function addToCart() {
           <template v-if="product.stockQuantity > 0">
             <QuantityStepper v-model="quantity" :max="Math.max(1, maxAddable)" :disabled="maxAddable === 0" />
             <button class="btn btn-primary btn-lg flex-1 sm:flex-none" :disabled="adding || maxAddable === 0" @click="addToCart">
-              {{ adding ? 'Adding…' : 'Add to cart' }}
+              {{ adding ? $t('Adding…') : $t('Add to cart') }}
             </button>
           </template>
           <WishlistButton :product-id="product.id" variant="button" />
         </div>
         <p v-if="inCart && maxAddable === 0 && product.stockQuantity > 0" class="mt-2 text-sm text-stone-600">
-          You already have all available stock in your cart.
+          {{ $t('You already have all available stock in your cart.') }}
         </p>
-        <p v-else-if="inCart" class="mt-2 text-sm text-stone-600">{{ inCart }} already in your cart.</p>
+        <p v-else-if="inCart" class="mt-2 text-sm text-stone-600">{{ $t('{n} already in your cart.', { n: inCart }) }}</p>
 
         <div v-if="message" :class="message.type === 'success' ? 'alert-success' : 'alert-error'" class="mt-4 flex items-center justify-between gap-3">
           <span>{{ message.text }}</span>
-          <RouterLink v-if="message.type === 'success'" :to="{ name: 'cart' }" class="font-semibold whitespace-nowrap underline">View cart</RouterLink>
+          <RouterLink v-if="message.type === 'success'" :to="{ name: 'cart' }" class="font-semibold whitespace-nowrap underline">{{ $t('View cart') }}</RouterLink>
         </div>
 
         <ul class="mt-6 space-y-1.5 border-t border-stone-100 pt-4 text-sm text-stone-600">
-          <li>🚚 Cash on delivery nationwide</li>
-          <li>↩ Cancel free of charge until the shop starts processing your order</li>
+          <li>🚚 {{ $t('Cash on delivery nationwide') }}</li>
+          <li>↩ {{ $t('Cancel free of charge until the shop starts processing your order') }}</li>
         </ul>
 
         <!-- Details -->
@@ -211,7 +212,7 @@ async function addToCart() {
               class="-mb-px border-b-2 pb-2 font-medium"
               @click="tab = 'description'"
             >
-              Description
+              {{ $t('Description') }}
             </button>
             <button
               v-if="specs.length"
@@ -221,7 +222,7 @@ async function addToCart() {
               class="-mb-px border-b-2 pb-2 font-medium"
               @click="tab = 'specs'"
             >
-              Specifications
+              {{ $t('Specifications') }}
             </button>
           </div>
           <p v-if="tab === 'description'" class="mt-4 leading-relaxed whitespace-pre-line text-stone-700">{{ product.description }}</p>

@@ -17,7 +17,7 @@ const current = computed(() => tabs.find((t) => t.key === tab.value) ?? tabs[0]!
 </script>
 
 <template>
-  <h1 class="text-2xl font-semibold">Promotions</h1>
+  <h1 class="text-2xl font-semibold">{{ $t('Promotions') }}</h1>
   <div class="mt-4 inline-flex flex-wrap gap-1 rounded-lg bg-stone-100 p-1" role="tablist">
     <RouterLink
       v-for="t in tabs"
@@ -28,10 +28,10 @@ const current = computed(() => tabs.find((t) => t.key === tab.value) ?? tabs[0]!
       :class="tab === t.key ? 'tab-active' : ''"
       class="tab"
     >
-      {{ t.label }}
+      {{ $t(t.label) }}
     </RouterLink>
   </div>
-  <p class="mt-2 text-sm text-stone-500">{{ current.blurb }}</p>
+  <p class="mt-2 text-sm text-stone-500">{{ $t(current.blurb) }}</p>
 
   <div class="mt-6">
     <DiscountsPanel v-if="tab === 'discounts'" />
@@ -40,6 +40,6 @@ const current = computed(() => tabs.find((t) => t.key === tab.value) ?? tabs[0]!
   </div>
 
   <p class="mt-8 text-xs text-stone-500">
-    How they combine: each product line gets its best automatic discount, then the member percentage applies to what's left, then the voucher.
+    {{ $t("How they combine: each product line gets its best automatic discount, then the member percentage applies to what's left, then the voucher.") }}
   </p>
 </template>

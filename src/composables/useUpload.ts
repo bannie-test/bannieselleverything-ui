@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { errorMessage, http } from '@/api/client'
+import { t } from '@/i18n'
 
 const MAX_BYTES = 5 * 1024 * 1024
 
@@ -15,7 +16,7 @@ export function useUpload() {
 
     const tooBig = list.find((f) => f.size > MAX_BYTES)
     if (tooBig) {
-      error.value = `“${tooBig.name}” is larger than 5 MB.`
+      error.value = t('“{name}” is larger than 5 MB.', { name: tooBig.name })
       return []
     }
 
@@ -28,7 +29,7 @@ export function useUpload() {
         urls.push((await http.post<{ url: string }>('/admin/media', body)).data.url)
       }
     } catch (e) {
-      error.value = errorMessage(e, 'Upload failed. Please try again.')
+      error.value = errorMessage(e, t('Upload failed. Please try again.'))
     } finally {
       uploading.value = false
     }
