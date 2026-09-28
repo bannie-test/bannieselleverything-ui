@@ -36,7 +36,20 @@ async function move(status: OrderStatus) {
 </script>
 
 <template>
-  <RouterLink :to="{ name: 'admin-orders' }" class="text-sm text-stone-600 hover:text-primary">← All orders</RouterLink>
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <RouterLink :to="{ name: 'admin-orders' }" class="text-sm text-stone-600 hover:text-primary">← All orders</RouterLink>
+    <RouterLink
+      v-if="data"
+      :to="{ name: 'admin-receipt', params: { number: data.order.orderNumber }, query: { print: '1' } }"
+      target="_blank"
+      class="btn btn-secondary"
+    >
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M7 9V3h10v6M7 17H5a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M7 14h10v7H7v-7Z" />
+      </svg>
+      Print receipt
+    </RouterLink>
+  </div>
 
   <p v-if="error" class="alert-error mt-4">{{ error }}</p>
   <div v-if="!data && !error" class="mt-4 h-64 animate-pulse rounded-xl bg-stone-200" />

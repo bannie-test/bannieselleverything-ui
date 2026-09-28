@@ -36,6 +36,13 @@ export const router = createRouter({
       ],
     },
     { path: '/admin/login', name: 'admin-login', component: () => import('@/views/admin/AdminLoginView.vue') },
+    // Printable receipt: no admin chrome.
+    {
+      path: '/admin/orders/:number/receipt',
+      name: 'admin-receipt',
+      component: () => import('@/views/admin/ReceiptView.vue'),
+      meta: { requiresAdmin: true },
+    },
     {
       path: '/admin',
       component: () => import('@/layouts/AdminLayout.vue'),
@@ -48,6 +55,15 @@ export const router = createRouter({
         { path: 'products/new', name: 'admin-product-new', component: () => import('@/views/admin/ProductEditView.vue') },
         { path: 'products/:id', name: 'admin-product-edit', component: () => import('@/views/admin/ProductEditView.vue') },
         { path: 'categories', name: 'admin-categories', component: () => import('@/views/admin/CategoriesView.vue') },
+        { path: 'customers', name: 'admin-customers', component: () => import('@/views/admin/CustomersView.vue') },
+        { path: 'promotions', redirect: { name: 'admin-promotions', params: { tab: 'discounts' } } },
+        {
+          path: 'promotions/:tab(discounts|vouchers|membership)',
+          name: 'admin-promotions',
+          component: () => import('@/views/admin/PromotionsView.vue'),
+        },
+        { path: 'reports', name: 'admin-reports', component: () => import('@/views/admin/ReportsView.vue') },
+        { path: 'settings', name: 'admin-settings', component: () => import('@/views/admin/SettingsView.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/NotFoundView.vue') },

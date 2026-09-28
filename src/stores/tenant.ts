@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { http } from '@/api/client'
 import type { Category, TenantInfo } from '@/api/types'
+import { applyTheme } from '@/utils/theme'
 
 /** The shop this subdomain belongs to. Loaded once at boot; drives branding and navigation. */
 export const useTenantStore = defineStore('tenant', () => {
@@ -10,6 +11,12 @@ export const useTenantStore = defineStore('tenant', () => {
   const notFound = ref(false)
   let loading: Promise<void> | null = null
 
+  function apply(tenant: TenantInfo) {
+    info.value = tenant
+    applyTheme({ primaryColor: tenant.primaryColor, ...tenant.theme })
+    document.title = tenant.name
+  }
+
   function load() {
     loading ??= (async () => {
       try {
@@ -17,10 +24,8 @@ export const useTenantStore = defineStore('tenant', () => {
           http.get<TenantInfo>('/storefront/tenant-info'),
           http.get<Category[]>('/storefront/categories'),
         ])
-        info.value = tenant.data
         categories.value = cats.data
-        document.documentElement.style.setProperty('--tenant-primary', tenant.data.primaryColor)
-        document.title = tenant.data.name
+        apply(tenant.data)
       } catch (error) {
         notFound.value = (error as { response?: { status?: number } }).response?.status === 404
         loading = null
@@ -30,6 +35,11 @@ export const useTenantStore = defineStore('tenant', () => {
     return loading
   }
 
+  /** Re-reads the shop after its settings were saved, so the new theme shows right away. */
+  async function refresh() {
+    apply((await http.get<TenantInfo>('/storefront/tenant-info')).data)
+  }
+
   /** Top-level categories, each with its active children. */
   function tree() {
     return categories.value
@@ -37,5 +47,5 @@ export const useTenantStore = defineStore('tenant', () => {
       .map((parent) => ({ ...parent, children: categories.value.filter((c) => c.parentId === parent.id) }))
   }
 
-  return { info, categories, notFound, load, tree }
+  return { info, categories, notFound, load, refresh, tree }
 })

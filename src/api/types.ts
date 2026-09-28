@@ -18,7 +18,50 @@ export interface TenantInfo {
   contactEmail: string | null
   contactPhone: string | null
   address: string | null
+  theme: StorefrontTheme
 }
+
+export type FontFamily = 'system' | 'inter' | 'be-vietnam-pro' | 'nunito' | 'lora' | 'playfair'
+export type CornerStyle = 'sharp' | 'rounded' | 'pill'
+export type SidebarStyle = 'dark' | 'light' | 'brand'
+export type SidebarKey = 'dashboard' | 'orders' | 'products' | 'categories' | 'customers' | 'promotions' | 'reports' | 'settings'
+
+export interface StorefrontTheme {
+  accentColor: string
+  fontFamily: FontFamily
+  cornerStyle: CornerStyle
+  heroTitle: string | null
+  heroSubtitle: string | null
+  heroImageUrl: string | null
+  announcementText: string | null
+}
+
+export interface SidebarItem {
+  key: SidebarKey
+  label: string | null
+  visible: boolean
+}
+
+export interface Appearance extends StorefrontTheme {
+  sidebarStyle: SidebarStyle
+  sidebarCompact: boolean
+  sidebarItems: SidebarItem[]
+}
+
+export interface ShopSettings {
+  slug: string
+  name: string
+  logoUrl: string | null
+  primaryColor: string
+  contactEmail: string | null
+  contactPhone: string | null
+  address: string | null
+  currency: string
+  flatShippingMinor: number
+  appearance: Appearance
+}
+
+export type SaveShopSettings = Omit<ShopSettings, 'slug' | 'currency'>
 
 export interface CategoryRef {
   id: string
@@ -42,6 +85,9 @@ export interface ProductSummary {
   imageUrl: string | null
   inStock: boolean
   category: CategoryRef | null
+  /** Price after the best running automatic discount; null when none applies. */
+  discountedPriceMinor: number | null
+  lowStock: boolean
 }
 
 export interface ProductDetail {
@@ -57,18 +103,46 @@ export interface ProductDetail {
   images: string[]
   attributes: Record<string, string>
   category: CategoryRef | null
+  parentCategory: CategoryRef | null
+  discountedPriceMinor: number | null
+  discountName: string | null
+  lowStockThreshold: number
 }
 
 export interface CartItem {
   productId: string
+  categoryId: string | null
   name: string
   slug: string
   imageUrl: string | null
+  /** List price. */
   unitPriceMinor: number
   quantity: number
   lineTotalMinor: number
+  /** Automatic discount on the whole line. */
+  discountMinor: number
+  discountName: string | null
   stockQuantity: number
   available: boolean
+}
+
+export type VoucherType = 'Percentage' | 'FixedAmount' | 'FreeShipping'
+
+export interface MembershipQuote {
+  tierId: string
+  name: string
+  discountPercent: number
+  color: string
+}
+
+export interface VoucherQuote {
+  code: string
+  description: string | null
+  type: VoucherType
+  discountMinor: number
+  /** False when the code can't be used right now; `message` says why. */
+  applied: boolean
+  message: string | null
 }
 
 export interface Cart {
@@ -77,6 +151,13 @@ export interface Cart {
   itemCount: number
   subtotalMinor: number
   currency: string
+  productDiscountMinor: number
+  membership: MembershipQuote | null
+  membershipDiscountMinor: number
+  voucher: VoucherQuote | null
+  voucherDiscountMinor: number
+  shippingMinor: number
+  totalMinor: number
 }
 
 export interface Address {
@@ -104,6 +185,7 @@ export interface OrderItem {
   unitPriceMinor: number
   quantity: number
   lineTotalMinor: number
+  discountMinor: number
 }
 
 export interface Order {
@@ -121,6 +203,11 @@ export interface Order {
   placedAt: string
   items: OrderItem[]
   canCancel: boolean
+  productDiscountMinor: number
+  membershipDiscountMinor: number
+  voucherDiscountMinor: number
+  voucherCode: string | null
+  membershipTierName: string | null
 }
 
 export interface OrderSummary {
@@ -133,6 +220,7 @@ export interface OrderSummary {
   currency: string
   itemCount: number
   placedAt: string
+  discountMinor: number
 }
 
 export interface Customer {
@@ -180,6 +268,21 @@ export interface AdminProduct {
   images: string[]
   attributes: Record<string, string>
   updatedAt: string
+  createdAt: string
+  lowStockThreshold: number
+  isLowStock: boolean
+  isFeatured: boolean
+  suggestedProductIds: string[]
+  /** Filled on the single-product endpoints only. */
+  suggestedProducts: ProductRef[]
+}
+
+export interface ProductRef {
+  id: string
+  name: string
+  sku: string | null
+  imageUrl: string | null
+  isActive: boolean
 }
 
 export interface SaveProduct {
@@ -194,6 +297,9 @@ export interface SaveProduct {
   isActive: boolean
   images: string[]
   attributes: Record<string, string>
+  lowStockThreshold: number
+  isFeatured: boolean
+  suggestedProductIds: string[]
 }
 
 export interface SaveCategory {
@@ -219,4 +325,177 @@ export interface Dashboard {
   orders30Days: number
   currency: string
   daily: { date: string; revenueMinor: number; orders: number }[]
+}
+
+// ---- Promotions ----
+
+export type DiscountType = 'Percentage' | 'FixedAmount'
+export type DiscountScope = 'AllProducts' | 'Categories' | 'Products'
+export type PromotionStatus = 'Active' | 'Scheduled' | 'Expired' | 'Used up' | 'Off'
+
+export interface Discount {
+  id: string
+  name: string
+  type: DiscountType
+  value: number
+  scope: DiscountScope
+  categoryIds: string[]
+  productIds: string[]
+  startsAt: string | null
+  endsAt: string | null
+  isActive: boolean
+  status: PromotionStatus
+}
+
+export type SaveDiscount = Omit<Discount, 'id' | 'status'>
+
+export interface Voucher {
+  id: string
+  code: string
+  description: string | null
+  type: VoucherType
+  value: number
+  maxDiscountMinor: number | null
+  minSubtotalMinor: number
+  startsAt: string | null
+  endsAt: string | null
+  usageLimit: number | null
+  perCustomerLimit: number | null
+  usedCount: number
+  isActive: boolean
+  status: PromotionStatus
+}
+
+export type SaveVoucher = Omit<Voucher, 'id' | 'status' | 'usedCount'>
+
+export interface MembershipTier {
+  id: string
+  name: string
+  minSpentMinor: number
+  discountPercent: number
+  color: string
+  benefits: string | null
+  memberCount: number
+}
+
+export type SaveMembershipTier = Omit<MembershipTier, 'id' | 'memberCount'>
+
+export interface MyMembership {
+  current: MembershipTier | null
+  spentMinor: number
+  next: MembershipTier | null
+  remainingMinor: number
+  tiers: MembershipTier[]
+  currency: string
+}
+
+export interface AdminCustomer {
+  id: string
+  email: string
+  fullName: string
+  phone: string | null
+  tier: { id: string; name: string; color: string } | null
+  orderCount: number
+  /** Total of delivered orders, which membership tiers are based on. */
+  spentMinor: number
+  lastOrderAt: string | null
+  createdAt: string
+}
+
+// ---- Reports ----
+
+export interface ReportPeriod {
+  from: string
+  to: string
+  currency: string
+  generatedAt: string
+}
+
+export interface SalesTotals {
+  orders: number
+  units: number
+  grossMinor: number
+  discountMinor: number
+  netMinor: number
+  shippingMinor: number
+  collectedMinor: number
+  averageOrderMinor: number
+  cancelledOrders: number
+}
+
+export interface SalesDay extends Omit<SalesTotals, 'averageOrderMinor' | 'cancelledOrders'> {
+  date: string
+}
+
+export interface SalesReport {
+  period: ReportPeriod
+  totals: SalesTotals
+  daily: SalesDay[]
+  byCategory: { category: string; units: number; netMinor: number }[]
+}
+
+export interface OrderReportRow {
+  orderNumber: string
+  placedAt: string
+  status: OrderStatus
+  customerEmail: string
+  recipientName: string
+  isGuest: boolean
+  units: number
+  subtotalMinor: number
+  discountMinor: number
+  shippingMinor: number
+  totalMinor: number
+  voucherCode: string | null
+}
+
+export interface OrderReport {
+  period: ReportPeriod
+  totalOrders: number
+  byStatus: { status: OrderStatus; orders: number; totalMinor: number }[]
+  orders: OrderReportRow[]
+  truncated: boolean
+}
+
+export interface ProductReportRow {
+  productId: string
+  name: string
+  sku: string | null
+  category: string | null
+  unitsSold: number
+  grossMinor: number
+  discountMinor: number
+  netMinor: number
+  stock: number
+  lowStockThreshold: number
+  isActive: boolean
+  isDeleted: boolean
+}
+
+export interface ProductReport {
+  period: ReportPeriod
+  inventory: { products: number; unitsInStock: number; stockValueMinor: number; lowStock: number; outOfStock: number }
+  products: ProductReportRow[]
+}
+
+export interface CustomerReportRow {
+  email: string
+  name: string
+  isRegistered: boolean
+  tier: string | null
+  orders: number
+  units: number
+  spentMinor: number
+  firstOrderAt: string
+  lastOrderAt: string
+}
+
+export interface CustomerReport {
+  period: ReportPeriod
+  newAccounts: number
+  buyers: number
+  repeatBuyers: number
+  guestOrders: number
+  averageSpendMinor: number
+  customers: CustomerReportRow[]
 }

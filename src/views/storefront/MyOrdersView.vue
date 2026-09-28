@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { http } from '@/api/client'
 import type { OrderSummary, Paged } from '@/api/types'
+import MembershipCard from '@/components/MembershipCard.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import { useCustomerStore } from '@/stores/customer'
@@ -30,19 +31,23 @@ watch(
 
 <template>
   <div class="mx-auto max-w-3xl">
-    <h1 class="text-2xl font-semibold">My orders</h1>
+    <h1 class="text-2xl font-semibold">My account</h1>
     <p v-if="customer.customer" class="mt-1 text-sm text-stone-600">Signed in as {{ customer.customer.email }}</p>
 
-    <p v-if="failed" class="alert-error mt-6">We couldn't load your orders. Please refresh the page.</p>
-    <div v-else-if="!result" class="mt-6 h-40 animate-pulse rounded-xl bg-stone-200" />
+    <MembershipCard class="mt-6" />
 
-    <div v-else-if="result.items.length === 0" class="card mt-6 p-10 text-center">
+    <h2 class="mt-8 text-lg font-semibold">Orders</h2>
+
+    <p v-if="failed" class="alert-error mt-4">We couldn't load your orders. Please refresh the page.</p>
+    <div v-else-if="!result" class="mt-4 h-40 animate-pulse rounded-xl bg-stone-200" />
+
+    <div v-else-if="result.items.length === 0" class="card mt-4 p-10 text-center">
       <p class="font-medium">No orders yet</p>
       <RouterLink :to="{ name: 'catalog' }" class="btn btn-primary mt-4">Start shopping</RouterLink>
     </div>
 
     <template v-else>
-      <ul class="card mt-6 divide-y divide-stone-100">
+      <ul class="card mt-4 divide-y divide-stone-100">
         <li v-for="o in result.items" :key="o.id">
           <RouterLink :to="{ name: 'order', params: { number: o.orderNumber } }" class="flex flex-wrap items-center justify-between gap-3 p-4 hover:bg-stone-50">
             <div>

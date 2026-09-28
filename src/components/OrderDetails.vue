@@ -24,13 +24,29 @@ defineProps<{ order: Order }>()
         <div>
           <p class="font-medium">{{ item.productName }}</p>
           <p class="text-sm text-stone-500">{{ item.quantity }} × {{ money(item.unitPriceMinor, order.currency) }}</p>
+          <p v-if="item.discountMinor" class="text-xs text-red-600">Sale −{{ money(item.discountMinor, order.currency) }}</p>
         </div>
-        <p class="font-medium whitespace-nowrap">{{ money(item.lineTotalMinor, order.currency) }}</p>
+        <div class="text-right whitespace-nowrap">
+          <p class="font-medium">{{ money(item.lineTotalMinor - item.discountMinor, order.currency) }}</p>
+          <s v-if="item.discountMinor" class="text-xs text-stone-400">{{ money(item.lineTotalMinor, order.currency) }}</s>
+        </div>
       </div>
       <dl class="space-y-1 p-4 text-sm">
         <div class="flex justify-between">
           <dt class="text-stone-600">Subtotal</dt>
           <dd>{{ money(order.subtotalMinor, order.currency) }}</dd>
+        </div>
+        <div v-if="order.productDiscountMinor" class="flex justify-between text-red-600">
+          <dt>Sale discounts</dt>
+          <dd>−{{ money(order.productDiscountMinor, order.currency) }}</dd>
+        </div>
+        <div v-if="order.membershipDiscountMinor" class="flex justify-between text-red-600">
+          <dt>{{ order.membershipTierName }} member discount</dt>
+          <dd>−{{ money(order.membershipDiscountMinor, order.currency) }}</dd>
+        </div>
+        <div v-if="order.voucherDiscountMinor" class="flex justify-between text-red-600">
+          <dt>Voucher <span class="font-mono">{{ order.voucherCode }}</span></dt>
+          <dd>−{{ money(order.voucherDiscountMinor, order.currency) }}</dd>
         </div>
         <div class="flex justify-between">
           <dt class="text-stone-600">Shipping</dt>

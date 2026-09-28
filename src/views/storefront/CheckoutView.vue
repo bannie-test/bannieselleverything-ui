@@ -3,16 +3,16 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { errorMessage, fieldErrors, http, LAST_ORDER_EMAIL_KEY } from '@/api/client'
 import type { Address, Order } from '@/api/types'
+import CartTotals from '@/components/CartTotals.vue'
+import VoucherBox from '@/components/VoucherBox.vue'
 import { useCartStore } from '@/stores/cart'
 import { useCustomerStore } from '@/stores/customer'
-import { useTenantStore } from '@/stores/tenant'
 import { money } from '@/utils/format'
 import { storage } from '@/utils/storage'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const customer = useCustomerStore()
-const tenant = useTenantStore()
 
 const email = ref('')
 const notes = ref('')
@@ -27,7 +27,7 @@ const submitting = ref(false)
 const idempotencyKey = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`
 
 const cart = computed(() => cartStore.cart)
-const shipping = computed(() => tenant.info?.flatShippingMinor ?? 0)
+const voucherBlocked = computed(() => cart.value.voucher !== null && !cart.value.voucher.applied)
 
 const fields: { key: keyof Address; label: string; autocomplete: string; wide?: boolean }[] = [
   { key: 'recipientName', label: 'Full name', autocomplete: 'name' },
@@ -168,25 +168,19 @@ async function placeOrder() {
             <span class="text-stone-500">× {{ item.quantity }}</span>
             <span v-if="!item.available" class="block text-xs text-red-600">Not enough stock</span>
           </span>
-          <span class="whitespace-nowrap">{{ money(item.lineTotalMinor, cart.currency) }}</span>
+          <span class="text-right whitespace-nowrap">
+            {{ money(item.lineTotalMinor - item.discountMinor, cart.currency) }}
+            <s v-if="item.discountMinor" class="block text-xs text-stone-400">{{ money(item.lineTotalMinor, cart.currency) }}</s>
+          </span>
         </li>
       </ul>
-      <dl class="mt-4 space-y-2 border-t border-stone-100 pt-4 text-sm">
-        <div class="flex justify-between">
-          <dt class="text-stone-600">Subtotal</dt>
-          <dd>{{ money(cart.subtotalMinor, cart.currency) }}</dd>
-        </div>
-        <div class="flex justify-between">
-          <dt class="text-stone-600">Shipping</dt>
-          <dd>{{ shipping ? money(shipping, cart.currency) : 'Free' }}</dd>
-        </div>
-        <div class="flex justify-between border-t border-stone-100 pt-3 text-base font-semibold">
-          <dt>Total</dt>
-          <dd>{{ money(cart.subtotalMinor + shipping, cart.currency) }}</dd>
-        </div>
-      </dl>
+      <div class="mt-4 border-t border-stone-100 pt-4">
+        <VoucherBox />
+      </div>
+      <CartTotals class="mt-4 border-t border-stone-100 pt-4" :cart="cart" />
+      <p v-if="voucherBlocked" class="alert-error mt-4">Remove the voucher that can't be used, or fix what it needs, to place your order.</p>
       <p v-if="submitError" class="alert-error mt-4">{{ submitError }}</p>
-      <button type="submit" class="btn btn-primary btn-lg mt-5 w-full" :disabled="submitting || !cartStore.loaded">
+      <button type="submit" class="btn btn-primary btn-lg mt-5 w-full" :disabled="submitting || !cartStore.loaded || voucherBlocked">
         {{ submitting ? 'Placing order…' : 'Place order' }}
       </button>
       <RouterLink :to="{ name: 'cart' }" class="mt-3 block text-center text-sm text-stone-600 hover:text-primary">Back to cart</RouterLink>

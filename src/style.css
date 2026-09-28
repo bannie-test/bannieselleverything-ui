@@ -1,20 +1,37 @@
 @import 'tailwindcss';
 
 /*
- * Tenant branding: the tenant store sets --tenant-primary on <html> at boot from
- * GET /storefront/tenant-info. Tailwind's `primary` color token reads it, so
- * bg-primary, text-primary, ring-primary etc. follow each shop's brand.
+ * Tenant theming: utils/theme.ts sets these variables on <html> from the shop's settings
+ * (GET /storefront/tenant-info). Tailwind's tokens read them, so bg-primary, text-accent,
+ * rounded-lg, font-sans etc. follow each shop's brand. Setting the same variables on any
+ * element re-themes just that subtree, which the admin settings preview uses.
  */
 :root {
   --tenant-primary: #2563eb;
+  --tenant-on-primary: #ffffff;
+  --tenant-accent: #f59e0b;
+  --tenant-on-accent: #1c1917;
+  --tenant-font: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  --tenant-radius-md: 0.375rem;
+  --tenant-radius-lg: 0.5rem;
+  --tenant-radius-xl: 0.75rem;
+  --tenant-radius-2xl: 1rem;
 }
 
 @theme inline {
   --color-primary: var(--tenant-primary);
+  --color-on-primary: var(--tenant-on-primary);
+  --color-accent: var(--tenant-accent);
+  --color-on-accent: var(--tenant-on-accent);
+  --font-sans: var(--tenant-font);
+  --radius-md: var(--tenant-radius-md);
+  --radius-lg: var(--tenant-radius-lg);
+  --radius-xl: var(--tenant-radius-xl);
+  --radius-2xl: var(--tenant-radius-2xl);
 }
 
 body {
-  @apply bg-stone-50 text-stone-900 antialiased;
+  @apply bg-stone-50 font-sans text-stone-900 antialiased;
 }
 
 @layer components {
@@ -24,7 +41,7 @@ body {
       focus-visible:outline-primary;
   }
   .btn-primary {
-    @apply bg-primary text-white hover:brightness-110;
+    @apply bg-primary text-on-primary hover:brightness-110;
   }
   .btn-secondary {
     @apply border border-stone-300 bg-white text-stone-800 hover:bg-stone-100;
@@ -35,6 +52,9 @@ body {
   .btn-lg {
     @apply px-6 py-3 text-base;
   }
+  .btn-sm {
+    @apply px-2.5 py-1 text-xs;
+  }
   .input {
     @apply block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm shadow-xs placeholder:text-stone-400
       focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:bg-stone-100;
@@ -44,6 +64,9 @@ body {
   }
   .label {
     @apply mb-1 block text-sm font-medium text-stone-700;
+  }
+  .hint {
+    @apply mt-1 text-xs text-stone-500;
   }
   .field-error {
     @apply mt-1 text-xs text-red-600;
@@ -57,7 +80,47 @@ body {
   .alert-success {
     @apply rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800;
   }
+  .alert-warning {
+    @apply rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900;
+  }
   .link {
     @apply font-medium text-primary hover:underline;
+  }
+  .pill {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap;
+  }
+  .tab {
+    @apply rounded-md px-3 py-1.5 text-sm text-stone-600 hover:text-stone-900;
+  }
+  .tab-active {
+    @apply bg-white font-medium text-stone-900 shadow-sm;
+  }
+  .data-table {
+    @apply w-full text-sm;
+  }
+  .data-table thead {
+    @apply border-b border-stone-200 text-left text-xs text-stone-500 uppercase;
+  }
+  .data-table th {
+    @apply px-4 py-3 font-medium;
+  }
+  .data-table td {
+    @apply px-4 py-2.5;
+  }
+  .data-table tbody {
+    @apply divide-y divide-stone-100;
+  }
+}
+
+/* Printed receipts and reports: no app chrome, no shadows, black on white. */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+  body {
+    @apply bg-white;
+  }
+  .card {
+    @apply border-stone-300 break-inside-avoid;
   }
 }

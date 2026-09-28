@@ -49,6 +49,9 @@ function signOut() {
   </div>
 
   <div v-else class="flex min-h-screen flex-col">
+    <div v-if="tenant.info?.theme.announcementText" class="bg-accent px-4 py-2 text-center text-xs font-medium text-on-accent sm:text-sm">
+      {{ tenant.info.theme.announcementText }}
+    </div>
     <header class="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur">
       <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6">
         <button class="-ml-1 p-1 md:hidden" aria-label="Menu" @click="menuOpen = !menuOpen">
@@ -68,7 +71,7 @@ function signOut() {
 
         <nav class="ml-auto flex items-center gap-1 text-sm sm:gap-3">
           <template v-if="customer.isSignedIn">
-            <RouterLink :to="{ name: 'my-orders' }" class="hidden rounded-lg px-2 py-1.5 hover:bg-stone-100 sm:inline">My orders</RouterLink>
+            <RouterLink :to="{ name: 'my-orders' }" class="hidden rounded-lg px-2 py-1.5 hover:bg-stone-100 sm:inline">My account</RouterLink>
             <button class="hidden rounded-lg px-2 py-1.5 text-stone-600 hover:bg-stone-100 sm:inline" @click="signOut">Sign out</button>
           </template>
           <RouterLink v-else :to="{ name: 'login' }" class="hidden rounded-lg px-2 py-1.5 hover:bg-stone-100 sm:inline">Sign in</RouterLink>
@@ -83,7 +86,7 @@ function signOut() {
             </svg>
             <span
               v-if="cart.cart.itemCount"
-              class="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-white"
+              class="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-on-primary"
             >
               {{ cart.cart.itemCount }}
             </span>
@@ -136,7 +139,7 @@ function signOut() {
           </template>
           <hr class="my-2 border-stone-200" />
           <template v-if="customer.isSignedIn">
-            <RouterLink :to="{ name: 'my-orders' }" class="py-2">My orders</RouterLink>
+            <RouterLink :to="{ name: 'my-orders' }" class="py-2">My account</RouterLink>
             <button class="py-2 text-left" @click="signOut">Sign out</button>
           </template>
           <template v-else>
